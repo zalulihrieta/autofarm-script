@@ -70,6 +70,7 @@ end
 local gui = Instance.new("ScreenGui", player.PlayerGui)
 gui.ResetOnSpawn = false
 gui.Name = "AutoFarmHub"
+gui.DisplayOrder = 999999
 
 -- Floating Button (HYBRID)
 local floatBtn = Instance.new("TextButton", gui)
@@ -83,6 +84,8 @@ floatBtn.TextColor3 = Color3.new(1,1,1)
 floatBtn.Active = true
 floatBtn.Draggable = true
 Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(1,0)
+floatBtn.ZIndex = 50
+
 
 -- Main Frame
 local frame = Instance.new("Frame", gui)
@@ -93,6 +96,13 @@ frame.Visible = false
 frame.Active = true
 frame.Draggable = true
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0,18)
+frame.ZIndex = 40
+for _,v in ipairs(frame:GetDescendants()) do
+    if v:IsA("GuiObject") then
+        v.ZIndex = frame.ZIndex + 1
+    end
+end
+
 
 -- TopBar
 local top = Instance.new("Frame", frame)
@@ -164,5 +174,7 @@ gameBtn.MouseButton1Click:Connect(function()
     Core.TPGame()
     farmBtn.Text = "AUTO FARM : OFF"
 end)
+
+frame.Visible = true
 
 print("STEP 2 LOADED — GUI HYBRID CONNECTED")
