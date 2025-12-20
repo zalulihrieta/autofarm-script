@@ -44,13 +44,23 @@ RunService.Stepped:Connect(function()
     end
 end)
 
+-- ====== ANTI FLING + NOCLIP (IY STYLE FINAL) ======
+local AntiFling = true
 
--- ====== ANTI FLING FORCE CLEANER ======
-local function clearForces(root)
-    for _,v in ipairs(root:GetChildren()) do
+-- disable collision antar player (inti Infinite Yield)
+local function disableCollision(char)
+    for _,v in ipairs(char:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.CanCollide = false
+        end
+    end
+end
+
+-- bersihin force berbahaya
+local function cleanForces(root)
+    for _,v in ipairs(root:GetDescendants()) do
         if v:IsA("BodyVelocity")
         or v:IsA("BodyAngularVelocity")
-        or v:IsA("BodyForce")
         or v:IsA("LinearVelocity")
         or v:IsA("AngularVelocity")
         or v:IsA("VectorForce") then
@@ -59,103 +69,30 @@ local function clearForces(root)
     end
 end
 
--- ====== CHARACTER HANDLER ======
-local function onCharacter(char)
-    character = char
-    hrp = char:WaitForChild("HumanoidRootPart", 5)
-
-    if AutoFarm and hrp then
-        task.wait(0.6)
-        hrp.CFrame = AutoFarmCFrame
-    end
-end
-
-player.CharacterAdded:Connect(onCharacter)
-if player.Character then
-    onCharacter(player.Character)
-end
-
--- ====== GHOST MODE FIX (MOVABLE) ======
-local GhostMode = true
-
 RunService.Heartbeat:Connect(function()
-    if not GhostMode or not character then return end
+    if not AntiFling or not character or not hrp then return end
 
-    for _,v in ipairs(character:GetDescendants()) do
-        if v:IsA("BasePart") then
-            v.CanCollide = false
-            v.Massless = (v ~= hrp) -- HRP TETAP PUNYA MASS
-        end
-    end
+    -- 1️⃣ noclip / no player collision
+    disableCollision(character)
 
-    if hrp then
-        local lv = hrp.AssemblyLinearVelocity
-        local av = hrp.AssemblyAngularVelocity
-
-        if lv.Magnitude > MAX_LIN_VEL or av.Magnitude > MAX_ANG_VEL then
-            clearForces(hrp)
-            hrp.AssemblyLinearVelocity = Vector3.zero
-            hrp.AssemblyAngularVelocity = Vector3.zero
-        end
-    end
-end)
-
-
--- ====== GHOST MODE ======
-local GhostMode = true -- ON by default
-
-RunService.Heartbeat:Connect(function()
-    if not GhostMode or not character then return end
-
-    for _,v in ipairs(character:GetDescendants()) do
-        if v:IsA("BasePart") then
-            v.CanCollide = false
-            v.Massless = true
-            v.CustomPhysicalProperties = PhysicalProperties.new(
-                0, -- density
-                0, -- friction
-                0, -- elasticity
-                0, -- friction weight
-                0  -- elasticity weight
-            )
-        end
-    end
-
-    if hrp then
-        clearForces(hrp)
-        hrp.AssemblyLinearVelocity = Vector3.zero
-        hrp.AssemblyAngularVelocity = Vector3.zero
-    end
-end)
-
--- ====== AUTO FARM + ANTI FALL + ANTI FLING ======
-RunService.Heartbeat:Connect(function()
-    if not AutoFarm or not hrp then return end
-
-    local now = tick()
-    if now - lastTP >= TP_INTERVAL then
-        local dist = (hrp.Position - AutoFarmCFrame.Position).Magnitude
-        local fall = hrp.Position.Y < (AutoFarmCFrame.Position.Y - FALL_OFFSET)
-        if dist > MAX_DISTANCE or fall then
-            hrp.CFrame = AutoFarmCFrame
-            lastTP = now
-        end
-    end
-
-    -- ====== ANTI FLING FIX ======
     local lv = hrp.AssemblyLinearVelocity
     local av = hrp.AssemblyAngularVelocity
 
-    if lv.Magnitude > MAX_LIN_VEL or av.Magnitude > MAX_ANG_VEL then
-        clearForces(hrp)
-        hrp.AssemblyLinearVelocity = Vector3.zero
-        hrp.AssemblyAngularVelocity = Vector3.zero
+    -- 2️⃣ clamp velocity (HALUS, BUKAN FREEZE)
+    if lv.Magnitude > 90 then
+        hrp.AssemblyLinearVelocity = lv.Unit * 25
+    end
 
-        if lv.Magnitude > 200 then
-            hrp.CFrame = AutoFarmCFrame
-        end
+    if av.Magnitude > 60 then
+        hrp.AssemblyAngularVelocity = Vector3.zero
+    end
+
+    -- 3️⃣ emergency (kalau fling brutal)
+    if lv.Magnitude > 150 or av.Magnitude > 120 then
+        cleanForces(hrp)
     end
 end)
+
 
 -- ====== GUI ======
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
