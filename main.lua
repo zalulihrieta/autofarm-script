@@ -1,6 +1,7 @@
--- AUTO FARM SAFE FINAL (NO SOFTLOCK GUI)
+-- AUTO FARM SAFE FINAL (FULL + NO SOFTLOCK)
 -- Anti Fall + Noclip + Anti AFK + Anti Fling FIX
 -- GUI: X Minimize + Open Button + Right Ctrl
+-- TP Lobby + TP Game Area
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -35,7 +36,7 @@ player.Idled:Connect(function()
     VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 end)
 
--- ====== NOCLIP ======
+-- ====== NOCLIP (ONLY WHEN FARM) ======
 RunService.Stepped:Connect(function()
     if not AutoFarm or not character then return end
     for _,v in ipairs(character:GetDescendants()) do
@@ -99,7 +100,7 @@ gui.ResetOnSpawn = false
 
 -- ====== MAIN FRAME ======
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0,240,0,245)
+frame.Size = UDim2.new(0,240,0,285)
 frame.Position = UDim2.new(0.05,0,0.35,0)
 frame.BackgroundColor3 = Color3.fromRGB(28,28,28)
 frame.Active = true
@@ -142,10 +143,12 @@ local function makeBtn(text,y)
     return b
 end
 
-local autoBtn = makeBtn("AUTO FARM : OFF",10)
-local iyBtn   = makeBtn("INFINITE YIELD",55)
+local autoBtn  = makeBtn("AUTO FARM : OFF",10)
+local lobbyBtn = makeBtn("TP LOBBY",55)
+local gameBtn  = makeBtn("TP GAME AREA",100)
+local iyBtn    = makeBtn("INFINITE YIELD",145)
 
--- ====== OPEN BUTTON (ALWAYS SAFE) ======
+-- ====== OPEN BUTTON ======
 local openBtn = Instance.new("TextButton", gui)
 openBtn.Size = UDim2.new(0,80,0,30)
 openBtn.Position = UDim2.new(0,10,0.5,0)
@@ -153,6 +156,9 @@ openBtn.Text = "OPEN"
 openBtn.Visible = false
 openBtn.BackgroundColor3 = Color3.fromRGB(40,120,40)
 Instance.new("UICorner", openBtn).CornerRadius = UDim.new(0,8)
+openBtn.Active = true
+openBtn.Draggable = true
+
 
 -- ====== GUI LOGIC ======
 local function hideGui()
@@ -182,8 +188,22 @@ autoBtn.MouseButton1Click:Connect(function()
     if AutoFarm and hrp then hrp.CFrame = AutoFarmCFrame end
 end)
 
-iyBtn.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+lobbyBtn.MouseButton1Click:Connect(function()
+    AutoFarm = false
+    autoBtn.Text = "AUTO FARM : OFF"
+    if hrp then hrp.CFrame = LobbyCFrame end
 end)
 
-print("AUTO FARM FINAL — NO SOFTLOCK")
+gameBtn.MouseButton1Click:Connect(function()
+    AutoFarm = false
+    autoBtn.Text = "AUTO FARM : OFF"
+    if hrp then hrp.CFrame = GameAreaCFrame end
+end)
+
+iyBtn.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet(
+        "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"
+    ))()
+end)
+
+print("AUTO FARM FINAL FULL — TP FIXED 😎")
