@@ -1,25 +1,26 @@
--- AUTO FARM SAFE FINAL++
--- Anti Fall + Noclip + Anti AFK + Anti Fling + Infinite Yield GUI
+-- AUTO FARM SAFE FINAL++ (ANTI FLING FIX + RIGHT CTRL HIDE)
+-- Anti Fall + Noclip + Anti AFK + Anti Fling FIX + Infinite Yield GUI
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 
 -- ====== CFRAME ======
 local AutoFarmCFrame = CFrame.new(-280, 167, 341)
-local LobbyCFrame    = CFrame.new(-226, 180, 327)
+local LobbyCFrame    = CFrame.new(-298, 194, 373)
 local GameAreaCFrame = CFrame.new(-104, 48, 11)
 
--- ====== CONFIG (SEMI BRUTAL / AMAN) ======
-local TP_INTERVAL  = 0.6     -- jeda TP
-local MAX_DISTANCE = 10      -- mental jauh baru TP
-local FALL_OFFSET  = 12      -- jatuh ke bawah → balik
+-- ====== CONFIG ======
+local TP_INTERVAL  = 0.6
+local MAX_DISTANCE = 10
+local FALL_OFFSET  = 12
 
 -- ====== ANTI FLING CONFIG ======
-local MAX_LIN_VEL = 80       -- kecepatan linear aneh
-local MAX_ANG_VEL = 40       -- rotasi aneh
+local MAX_LIN_VEL = 80
+local MAX_ANG_VEL = 40
 
 -- ====== STATE ======
 local AutoFarm = false
@@ -35,7 +36,7 @@ end)
 
 -- ====== NOCLIP (RINGAN) ======
 RunService.Stepped:Connect(function()
-    if not character then return end
+    if not AutoFarm or not character then return end
     for _,v in ipairs(character:GetDescendants()) do
         if v:IsA("BasePart") then
             v.CanCollide = false
@@ -43,12 +44,25 @@ RunService.Stepped:Connect(function()
     end
 end)
 
+-- ====== ANTI FLING FORCE CLEANER ======
+local function clearForces(root)
+    for _,v in ipairs(root:GetChildren()) do
+        if v:IsA("BodyVelocity")
+        or v:IsA("BodyAngularVelocity")
+        or v:IsA("BodyForce")
+        or v:IsA("LinearVelocity")
+        or v:IsA("AngularVelocity")
+        or v:IsA("VectorForce") then
+            v:Destroy()
+        end
+    end
+end
+
 -- ====== CHARACTER HANDLER ======
 local function onCharacter(char)
     character = char
     hrp = char:WaitForChild("HumanoidRootPart", 5)
 
-    -- auto balik ke farm setelah mati
     if AutoFarm and hrp then
         task.wait(0.6)
         hrp.CFrame = AutoFarmCFrame
@@ -60,7 +74,7 @@ if player.Character then
     onCharacter(player.Character)
 end
 
--- ====== AUTO FARM SAFE + ANTI FALL ======
+-- ====== AUTO FARM + ANTI FALL + ANTI FLING ======
 RunService.Heartbeat:Connect(function()
     if not AutoFarm or not hrp then return end
 
@@ -74,13 +88,18 @@ RunService.Heartbeat:Connect(function()
         end
     end
 
-    -- ====== ANTI FLING (AMAN) ======
+    -- ====== ANTI FLING FIX ======
     local lv = hrp.AssemblyLinearVelocity
     local av = hrp.AssemblyAngularVelocity
 
     if lv.Magnitude > MAX_LIN_VEL or av.Magnitude > MAX_ANG_VEL then
+        clearForces(hrp)
         hrp.AssemblyLinearVelocity = Vector3.zero
         hrp.AssemblyAngularVelocity = Vector3.zero
+
+        if lv.Magnitude > 200 then
+            hrp.CFrame = AutoFarmCFrame
+        end
     end
 end)
 
@@ -152,4 +171,15 @@ iyBtn.MouseButton1Click:Connect(function()
     ))()
 end)
 
+-- ====== RIGHT CTRL HIDE GUI ======
+local guiVisible = true
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        guiVisible = not guiVisible
+        frame.Visible = guiVisible
+    end
+end)
+
 print("Auto Farm By Zaluli_Hrieta")
+
