@@ -192,5 +192,28 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
+-- ====== GUI VISIBILITY CONTROLLER ======
+local guiVisible = true
+
+local function setGuiVisible(state)
+    guiVisible = state
+    frame.Visible = guiVisible
+    closeBtn.Text = guiVisible and "X" or "O"
+end
+
+-- Right Ctrl toggle
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        setGuiVisible(not guiVisible)
+    end
+end)
+
+-- Button X / O toggle
+closeBtn.MouseButton1Click:Connect(function()
+    setGuiVisible(not guiVisible)
+end)
+
+
 print("Auto Farm By Zaluli_Hrieta")
 
