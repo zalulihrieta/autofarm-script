@@ -34,15 +34,16 @@ player.Idled:Connect(function()
     VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 end)
 
--- ====== NOCLIP (RINGAN) ======
+-- ====== NOCLIP ALWAYS ON ======
 RunService.Stepped:Connect(function()
-    if not AutoFarm or not character then return end
+    if not character then return end
     for _,v in ipairs(character:GetDescendants()) do
         if v:IsA("BasePart") then
             v.CanCollide = false
         end
     end
 end)
+
 
 -- ====== ANTI FLING FORCE CLEANER ======
 local function clearForces(root)
@@ -73,6 +74,33 @@ player.CharacterAdded:Connect(onCharacter)
 if player.Character then
     onCharacter(player.Character)
 end
+
+-- ====== GHOST MODE ======
+local GhostMode = true -- ON by default
+
+RunService.Heartbeat:Connect(function()
+    if not GhostMode or not character then return end
+
+    for _,v in ipairs(character:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.CanCollide = false
+            v.Massless = true
+            v.CustomPhysicalProperties = PhysicalProperties.new(
+                0, -- density
+                0, -- friction
+                0, -- elasticity
+                0, -- friction weight
+                0  -- elasticity weight
+            )
+        end
+    end
+
+    if hrp then
+        clearForces(hrp)
+        hrp.AssemblyLinearVelocity = Vector3.zero
+        hrp.AssemblyAngularVelocity = Vector3.zero
+    end
+end)
 
 -- ====== AUTO FARM + ANTI FALL + ANTI FLING ======
 RunService.Heartbeat:Connect(function()
