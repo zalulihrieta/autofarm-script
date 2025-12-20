@@ -1,6 +1,3 @@
--- AUTO FARM SAFE FINAL+++ (ANTI FLING FIX + CTRL + X BUTTON)
--- Anti Fall + Noclip + Anti AFK + Anti Fling FIX + Infinite Yield GUI
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
@@ -88,7 +85,6 @@ RunService.Heartbeat:Connect(function()
         end
     end
 
-    -- ====== ANTI FLING FIX ======
     local lv = hrp.AssemblyLinearVelocity
     local av = hrp.AssemblyAngularVelocity
 
@@ -103,7 +99,7 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- ====== GUI ======
+-- ================= GUI =================
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "AutoFarmGUI"
 gui.ResetOnSpawn = false
@@ -117,6 +113,7 @@ frame.Active = true
 frame.Draggable = true
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
 
+-- ====== TOP BAR ======
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, -40, 0, 30)
 title.BackgroundTransparency = 1
@@ -125,7 +122,7 @@ title.Font = Enum.Font.GothamBold
 title.TextSize = 16
 title.TextColor3 = Color3.new(1,1,1)
 
--- ====== X / O BUTTON ======
+-- ====== X / O BUTTON (ALWAYS VISIBLE) ======
 local closeBtn = Instance.new("TextButton", frame)
 closeBtn.Size = UDim2.new(0, 26, 0, 26)
 closeBtn.Position = UDim2.new(1, -30, 0, 2)
@@ -137,8 +134,14 @@ closeBtn.BackgroundColor3 = Color3.fromRGB(90,40,40)
 closeBtn.BorderSizePixel = 0
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
 
+-- ====== CONTENT (HIDE/SHOW) ======
+local content = Instance.new("Frame", frame)
+content.Position = UDim2.new(0, 0, 0, 30)
+content.Size = UDim2.new(1, 0, 1, -30)
+content.BackgroundTransparency = 1
+
 local function makeBtn(text, y)
-    local b = Instance.new("TextButton", frame)
+    local b = Instance.new("TextButton", content)
     b.Size = UDim2.new(1, -20, 0, 35)
     b.Position = UDim2.new(0, 10, 0, y)
     b.Text = text
@@ -151,18 +154,29 @@ local function makeBtn(text, y)
     return b
 end
 
-local autoBtn  = makeBtn("AUTO FARM : OFF", 40)
-local lobbyBtn = makeBtn("TP LOBBY", 85)
-local gameBtn  = makeBtn("TP GAME AREA", 130)
-local iyBtn    = makeBtn("INFINITE YIELD", 175)
+local autoBtn  = makeBtn("AUTO FARM : OFF", 10)
+local lobbyBtn = makeBtn("TP LOBBY", 55)
+local gameBtn  = makeBtn("TP GAME AREA", 100)
+local iyBtn    = makeBtn("INFINITE YIELD", 145)
 
--- ====== GUI VISIBILITY CONTROLLER ======
-local guiVisible = true
-local function setGuiVisible(state)
-    guiVisible = state
-    frame.Visible = guiVisible
-    closeBtn.Text = guiVisible and "X" or "O"
+-- ====== GUI VISIBILITY LOGIC (FIXED) ======
+local guiOpen = true
+local function setGui(state)
+    guiOpen = state
+    content.Visible = guiOpen
+    closeBtn.Text = guiOpen and "X" or "O"
 end
+
+closeBtn.MouseButton1Click:Connect(function()
+    setGui(not guiOpen)
+end)
+
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        setGui(not guiOpen)
+    end
+end)
 
 -- ====== BUTTON LOGIC ======
 autoBtn.MouseButton1Click:Connect(function()
@@ -189,19 +203,6 @@ iyBtn.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet(
         "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"
     ))()
-end)
-
--- ====== X BUTTON ======
-closeBtn.MouseButton1Click:Connect(function()
-    setGuiVisible(not guiVisible)
-end)
-
--- ====== RIGHT CTRL ======
-UserInputService.InputBegan:Connect(function(input, gpe)
-    if gpe then return end
-    if input.KeyCode == Enum.KeyCode.RightControl then
-        setGuiVisible(not guiVisible)
-    end
 end)
 
 print("Auto Farm By Zaluli_Hrieta")
