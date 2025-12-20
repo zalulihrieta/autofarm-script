@@ -1,209 +1,168 @@
--- AUTO FARM SAFE FINAL (FULL + NO SOFTLOCK)
--- Anti Fall + Noclip + Anti AFK + Anti Fling FIX
--- GUI: X Minimize + Open Button + Right Ctrl
--- TP Lobby + TP Game Area
+-- AUTO FARM HUB (STEP 2)
+-- GUI Hybrid (PC + HP) + Clean Design
+-- Logic & GUI dipisah section
 
+-- ================= CORE =================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
-local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 
--- ====== CFRAME ======
-local AutoFarmCFrame = CFrame.new(-280, 167, 341)
-local LobbyCFrame    = CFrame.new(-226, 180, 327)
-local GameAreaCFrame = CFrame.new(-104, 48, 11)
+-- CFRAME
+local AutoFarmCFrame = CFrame.new(-280,167,341)
+local LobbyCFrame    = CFrame.new(-226,180,327)
+local GameAreaCFrame = CFrame.new(-104,48,11)
 
--- ====== CONFIG ======
-local TP_INTERVAL  = 0.6
-local MAX_DISTANCE = 10
-local FALL_OFFSET  = 12
+-- STATE
+local Core = {}
+Core.AutoFarm = false
 
--- ====== ANTI FLING CONFIG ======
-local MAX_LIN_VEL = 80
-local MAX_ANG_VEL = 40
-
--- ====== STATE ======
-local AutoFarm = false
-local lastTP = 0
 local hrp, character
 
--- ====== ANTI AFK ======
+-- Anti AFK
 player.Idled:Connect(function()
     VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
     task.wait(1)
     VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 end)
 
--- ====== NOCLIP (ONLY WHEN FARM) ======
-RunService.Stepped:Connect(function()
-    if not AutoFarm or not character then return end
-    for _,v in ipairs(character:GetDescendants()) do
-        if v:IsA("BasePart") then
-            v.CanCollide = false
-        end
-    end
-end)
-
--- ====== ANTI FLING ======
-local function clearForces(root)
-    for _,v in ipairs(root:GetChildren()) do
-        if v:IsA("BodyVelocity")
-        or v:IsA("BodyAngularVelocity")
-        or v:IsA("BodyForce")
-        or v:IsA("LinearVelocity")
-        or v:IsA("AngularVelocity")
-        or v:IsA("VectorForce") then
-            v:Destroy()
-        end
-    end
-end
-
--- ====== CHARACTER ======
-local function onCharacter(char)
+-- Character
+local function onChar(char)
     character = char
-    hrp = char:WaitForChild("HumanoidRootPart", 5)
-    if AutoFarm and hrp then
-        task.wait(0.5)
+    hrp = char:WaitForChild("HumanoidRootPart",5)
+    if Core.AutoFarm and hrp then
+        task.wait(0.4)
         hrp.CFrame = AutoFarmCFrame
     end
 end
-player.CharacterAdded:Connect(onCharacter)
-if player.Character then onCharacter(player.Character) end
+player.CharacterAdded:Connect(onChar)
+if player.Character then onChar(player.Character) end
 
--- ====== AUTO FARM LOOP ======
+-- AutoFarm loop (simple & safe)
 RunService.Heartbeat:Connect(function()
-    if not AutoFarm or not hrp then return end
-
-    local now = tick()
-    if now - lastTP >= TP_INTERVAL then
-        if (hrp.Position - AutoFarmCFrame.Position).Magnitude > MAX_DISTANCE
-        or hrp.Position.Y < AutoFarmCFrame.Position.Y - FALL_OFFSET then
-            hrp.CFrame = AutoFarmCFrame
-            lastTP = now
-        end
-    end
-
-    local lv = hrp.AssemblyLinearVelocity
-    local av = hrp.AssemblyAngularVelocity
-    if lv.Magnitude > MAX_LIN_VEL or av.Magnitude > MAX_ANG_VEL then
-        clearForces(hrp)
-        hrp.AssemblyLinearVelocity = Vector3.zero
-        hrp.AssemblyAngularVelocity = Vector3.zero
+    if not Core.AutoFarm or not hrp then return end
+    if (hrp.Position - AutoFarmCFrame.Position).Magnitude > 10 then
+        hrp.CFrame = AutoFarmCFrame
     end
 end)
+
+-- CORE API
+function Core.ToggleFarm()
+    Core.AutoFarm = not Core.AutoFarm
+    if Core.AutoFarm and hrp then
+        hrp.CFrame = AutoFarmCFrame
+    end
+    return Core.AutoFarm
+end
+
+function Core.TPLobby()
+    Core.AutoFarm = false
+    if hrp then hrp.CFrame = LobbyCFrame end
+end
+
+function Core.TPGame()
+    Core.AutoFarm = false
+    if hrp then hrp.CFrame = GameAreaCFrame end
+end
 
 -- ================= GUI =================
 local gui = Instance.new("ScreenGui", player.PlayerGui)
 gui.ResetOnSpawn = false
+gui.Name = "AutoFarmHub"
 
--- ====== MAIN FRAME ======
+-- Floating Button (HYBRID)
+local floatBtn = Instance.new("TextButton", gui)
+floatBtn.Size = UDim2.new(0,56,0,56)
+floatBtn.Position = UDim2.new(0,20,0.5,-28)
+floatBtn.Text = "≡"
+floatBtn.Font = Enum.Font.GothamBold
+floatBtn.TextSize = 24
+floatBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+floatBtn.TextColor3 = Color3.new(1,1,1)
+floatBtn.Active = true
+floatBtn.Draggable = true
+Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(1,0)
+
+-- Main Frame
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0,240,0,285)
-frame.Position = UDim2.new(0.05,0,0.35,0)
-frame.BackgroundColor3 = Color3.fromRGB(28,28,28)
+frame.Size = UDim2.new(0,280,0,260)
+frame.Position = UDim2.new(0.5,-140,0.5,-130)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Visible = false
 frame.Active = true
 frame.Draggable = true
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,18)
 
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1,-40,0,30)
-title.BackgroundTransparency = 1
-title.Text = "AUTO FARM"
+-- TopBar
+local top = Instance.new("Frame", frame)
+top.Size = UDim2.new(1,0,0,44)
+top.BackgroundTransparency = 1
+
+local title = Instance.new("TextLabel", top)
+title.Size = UDim2.new(1,-50,1,0)
+title.Position = UDim2.new(0,16,0,0)
+title.Text = "AUTO FARM HUB"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 16
 title.TextColor3 = Color3.new(1,1,1)
+title.BackgroundTransparency = 1
+title.TextXAlignment = Left
 
--- ====== CLOSE (MINIMIZE) ======
-local closeBtn = Instance.new("TextButton", frame)
-closeBtn.Size = UDim2.new(0,26,0,26)
-closeBtn.Position = UDim2.new(1,-30,0,2)
-closeBtn.Text = "X"
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 14
-closeBtn.BackgroundColor3 = Color3.fromRGB(120,50,50)
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0,6)
+local close = Instance.new("TextButton", top)
+close.Size = UDim2.new(0,36,0,36)
+close.Position = UDim2.new(1,-44,0,4)
+close.Text = "–"
+close.Font = Enum.Font.GothamBold
+close.TextSize = 22
+close.BackgroundColor3 = Color3.fromRGB(50,50,50)
+Instance.new("UICorner", close).CornerRadius = UDim.new(1,0)
 
--- ====== CONTENT ======
+-- Content
 local content = Instance.new("Frame", frame)
-content.Position = UDim2.new(0,0,0,30)
-content.Size = UDim2.new(1,0,1,-30)
+content.Position = UDim2.new(0,0,0,44)
+content.Size = UDim2.new(1,0,1,-44)
 content.BackgroundTransparency = 1
 
 local function makeBtn(text,y)
     local b = Instance.new("TextButton", content)
-    b.Size = UDim2.new(1,-20,0,35)
-    b.Position = UDim2.new(0,10,0,y)
+    b.Size = UDim2.new(1,-32,0,48)
+    b.Position = UDim2.new(0,16,0,y)
     b.Text = text
     b.Font = Enum.Font.GothamBold
-    b.TextSize = 14
+    b.TextSize = 16
+    b.TextColor3 = Color3.new(1,1,1)
     b.BackgroundColor3 = Color3.fromRGB(55,55,55)
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0,14)
     return b
 end
 
-local autoBtn  = makeBtn("AUTO FARM : OFF",10)
-local lobbyBtn = makeBtn("TP LOBBY",55)
-local gameBtn  = makeBtn("TP GAME AREA",100)
-local iyBtn    = makeBtn("INFINITE YIELD",145)
+local farmBtn  = makeBtn("AUTO FARM : OFF",10)
+local lobbyBtn = makeBtn("TP LOBBY",70)
+local gameBtn  = makeBtn("TP GAME AREA",130)
 
--- ====== OPEN BUTTON ======
-local openBtn = Instance.new("TextButton", gui)
-openBtn.Size = UDim2.new(0,80,0,30)
-openBtn.Position = UDim2.new(0,10,0.5,0)
-openBtn.Text = "OPEN"
-openBtn.Visible = false
-openBtn.BackgroundColor3 = Color3.fromRGB(40,120,40)
-Instance.new("UICorner", openBtn).CornerRadius = UDim.new(0,8)
-openBtn.Active = true
-openBtn.Draggable = true
-
-
--- ====== GUI LOGIC ======
-local function hideGui()
-    frame.Visible = false
-    openBtn.Visible = true
-end
-
-local function showGui()
-    frame.Visible = true
-    openBtn.Visible = false
-end
-
-closeBtn.MouseButton1Click:Connect(hideGui)
-openBtn.MouseButton1Click:Connect(showGui)
-
-UserInputService.InputBegan:Connect(function(i,gp)
-    if gp then return end
-    if i.KeyCode == Enum.KeyCode.RightControl then
-        if frame.Visible then hideGui() else showGui() end
-    end
+-- ================= GUI ↔ CORE =================
+floatBtn.MouseButton1Click:Connect(function()
+    frame.Visible = not frame.Visible
 end)
 
--- ====== BUTTON LOGIC ======
-autoBtn.MouseButton1Click:Connect(function()
-    AutoFarm = not AutoFarm
-    autoBtn.Text = AutoFarm and "AUTO FARM : ON" or "AUTO FARM : OFF"
-    if AutoFarm and hrp then hrp.CFrame = AutoFarmCFrame end
+close.MouseButton1Click:Connect(function()
+    frame.Visible = false
+end)
+
+farmBtn.MouseButton1Click:Connect(function()
+    local state = Core.ToggleFarm()
+    farmBtn.Text = state and "AUTO FARM : ON" or "AUTO FARM : OFF"
 end)
 
 lobbyBtn.MouseButton1Click:Connect(function()
-    AutoFarm = false
-    autoBtn.Text = "AUTO FARM : OFF"
-    if hrp then hrp.CFrame = LobbyCFrame end
+    Core.TPLobby()
+    farmBtn.Text = "AUTO FARM : OFF"
 end)
 
 gameBtn.MouseButton1Click:Connect(function()
-    AutoFarm = false
-    autoBtn.Text = "AUTO FARM : OFF"
-    if hrp then hrp.CFrame = GameAreaCFrame end
+    Core.TPGame()
+    farmBtn.Text = "AUTO FARM : OFF"
 end)
 
-iyBtn.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet(
-        "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"
-    ))()
-end)
-
-print("AUTO FARM FINAL FULL — TP FIXED 😎")
+print("STEP 2 LOADED — GUI HYBRID CONNECTED")
