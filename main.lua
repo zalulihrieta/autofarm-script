@@ -1,4 +1,4 @@
--- AUTO FARM SAFE FINAL++ (ANTI FLING FIX + RIGHT CTRL HIDE)
+-- AUTO FARM SAFE FINAL+++ (ANTI FLING FIX + CTRL + X BUTTON)
 -- Anti Fall + Noclip + Anti AFK + Anti Fling FIX + Infinite Yield GUI
 
 local Players = game:GetService("Players")
@@ -10,7 +10,7 @@ local player = Players.LocalPlayer
 
 -- ====== CFRAME ======
 local AutoFarmCFrame = CFrame.new(-280, 167, 341)
-local LobbyCFrame    = CFrame.new(-298, 194, 373)
+local LobbyCFrame    = CFrame.new(-226, 180, 327)
 local GameAreaCFrame = CFrame.new(-104, 48, 11)
 
 -- ====== CONFIG ======
@@ -34,7 +34,7 @@ player.Idled:Connect(function()
     VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 end)
 
--- ====== NOCLIP (RINGAN) ======
+-- ====== NOCLIP (ONLY WHEN FARM) ======
 RunService.Stepped:Connect(function()
     if not AutoFarm or not character then return end
     for _,v in ipairs(character:GetDescendants()) do
@@ -118,6 +118,14 @@ frame.Draggable = true
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
 
 local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, -40, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "AUTO FARM"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.TextColor3 = Color3.new(1,1,1)
+
+-- ====== X / O BUTTON ======
 local closeBtn = Instance.new("TextButton", frame)
 closeBtn.Size = UDim2.new(0, 26, 0, 26)
 closeBtn.Position = UDim2.new(1, -30, 0, 2)
@@ -125,16 +133,9 @@ closeBtn.Text = "X"
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextSize = 14
 closeBtn.TextColor3 = Color3.new(1,1,1)
-closeBtn.BackgroundColor3 = Color3.fromRGB(90, 40, 40)
+closeBtn.BackgroundColor3 = Color3.fromRGB(90,40,40)
 closeBtn.BorderSizePixel = 0
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
-
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundTransparency = 1
-title.Text = "AUTO FARM"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 16
-title.TextColor3 = Color3.new(1,1,1)
 
 local function makeBtn(text, y)
     local b = Instance.new("TextButton", frame)
@@ -154,6 +155,14 @@ local autoBtn  = makeBtn("AUTO FARM : OFF", 40)
 local lobbyBtn = makeBtn("TP LOBBY", 85)
 local gameBtn  = makeBtn("TP GAME AREA", 130)
 local iyBtn    = makeBtn("INFINITE YIELD", 175)
+
+-- ====== GUI VISIBILITY CONTROLLER ======
+local guiVisible = true
+local function setGuiVisible(state)
+    guiVisible = state
+    frame.Visible = guiVisible
+    closeBtn.Text = guiVisible and "X" or "O"
+end
 
 -- ====== BUTTON LOGIC ======
 autoBtn.MouseButton1Click:Connect(function()
@@ -182,26 +191,12 @@ iyBtn.MouseButton1Click:Connect(function()
     ))()
 end)
 
--- ====== RIGHT CTRL HIDE GUI ======
-local guiVisible = true
-UserInputService.InputBegan:Connect(function(input, gpe)
-    if gpe then return end
-    if input.KeyCode == Enum.KeyCode.RightControl then
-        guiVisible = not guiVisible
-        frame.Visible = guiVisible
-    end
+-- ====== X BUTTON ======
+closeBtn.MouseButton1Click:Connect(function()
+    setGuiVisible(not guiVisible)
 end)
 
--- ====== GUI VISIBILITY CONTROLLER ======
-local guiVisible = true
-
-local function setGuiVisible(state)
-    guiVisible = state
-    frame.Visible = guiVisible
-    closeBtn.Text = guiVisible and "X" or "O"
-end
-
--- Right Ctrl toggle
+-- ====== RIGHT CTRL ======
 UserInputService.InputBegan:Connect(function(input, gpe)
     if gpe then return end
     if input.KeyCode == Enum.KeyCode.RightControl then
@@ -209,11 +204,4 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
--- Button X / O toggle
-closeBtn.MouseButton1Click:Connect(function()
-    setGuiVisible(not guiVisible)
-end)
-
-
 print("Auto Farm By Zaluli_Hrieta")
-
