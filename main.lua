@@ -1,6 +1,3 @@
--- AUTO FARM SAFE FINAL+++ (IY ANTI FLING + NOCLIP + MOBILE)
--- Anti Fall + Anti AFK + Anti Fling Infinite Yield Style + GUI PC & Mobile
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
@@ -70,6 +67,25 @@ RunService.Heartbeat:Connect(function()
         end
     end
 
+-- ====== HARD COUNTER SUPER RING ======
+RunService.Heartbeat:Connect(function()
+    if not character or not hrp then return end
+
+    for _,v in ipairs(character:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.CanCollide = false
+            v.Massless = true
+        end
+    end
+
+    local lv = hrp.AssemblyLinearVelocity
+    if lv.Magnitude > 40 then
+        hrp.AssemblyLinearVelocity = Vector3.zero
+        hrp.AssemblyAngularVelocity = Vector3.zero
+    end
+end)
+
+        
     -- AUTO FARM LOGIC
     if AutoFarm then
         local now = tick()
@@ -198,5 +214,24 @@ mobileBtn.MouseButton1Click:Connect(function()
     guiVisible = not guiVisible
     frame.Visible = guiVisible
 end)
+
+-- Notifications
+local userId = Players:GetUserIdFromNameAsync("Toolb0x3")
+local thumbType = Enum.ThumbnailType.HeadShot
+local thumbSize = Enum.ThumbnailSize.Size420x420
+local content = Players:GetUserThumbnailAsync(userId, thumbType, thumbSize)
+StarterGui:SetCore("SendNotification",{Title="Auto Farm", Text="Modified", Icon=content, Duration=5})
+StarterGui:SetCore("SendNotification",{Title="Credits", Text="Original by Zaluli_Hrieta", Icon=content, Duration=10})
+
+-- Chat message
+local function SendChatMessage(msg)
+    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+        local textChannel = TextChatService.TextChannels.RBXGeneral
+        textChannel:SendAsync(msg)
+    else
+        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg,"All")
+    end
+end
+SendChatMessage("EnjoY")
 
 print("Auto Farm By Zaluli_Hrieta")
