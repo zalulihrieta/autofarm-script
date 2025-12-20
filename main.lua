@@ -181,4 +181,23 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
+-- ====== MOBILE TOGGLE BUTTON ======
+local mobileBtn = Instance.new("TextButton", gui)
+mobileBtn.Size = UDim2.new(0, 50, 0, 50)
+mobileBtn.Position = UDim2.new(0, 10, 0.6, 0)
+mobileBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+mobileBtn.Text = "≡"
+mobileBtn.TextSize = 24
+mobileBtn.Font = Enum.Font.GothamBold
+mobileBtn.TextColor3 = Color3.new(1,1,1)
+mobileBtn.BorderSizePixel = 0
+mobileBtn.Active = true
+mobileBtn.Draggable = true
+Instance.new("UICorner", mobileBtn).CornerRadius = UDim.new(1, 0)
+
+mobileBtn.MouseButton1Click:Connect(function()
+    guiVisible = not guiVisible
+    frame.Visible = guiVisible
+end)
+
 print("Auto Farm By Zaluli_Hrieta")
