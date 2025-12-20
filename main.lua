@@ -1,5 +1,5 @@
--- AUTO FARM SAFE FINAL++ (ANTI FLING FIX + RIGHT CTRL HIDE)
--- Anti Fall + Noclip + Anti AFK + Anti Fling FIX + Infinite Yield GUI
+-- AUTO FARM SAFE FINAL+++ (IY ANTI FLING + NOCLIP + MOBILE)
+-- Anti Fall + Anti AFK + Anti Fling Infinite Yield Style + GUI PC & Mobile
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -18,14 +18,26 @@ local TP_INTERVAL  = 0.6
 local MAX_DISTANCE = 10
 local FALL_OFFSET  = 12
 
--- ====== ANTI FLING CONFIG ======
-local MAX_LIN_VEL = 80
-local MAX_ANG_VEL = 40
+-- ====== ANTI FLING CONFIG (IY STYLE) ======
+local MAX_LIN_VEL = 90
+local MAX_ANG_VEL = 60
 
 -- ====== STATE ======
 local AutoFarm = false
+local AntiFling = true
 local lastTP = 0
-local hrp, character
+local character, hrp
+
+-- ====== CHARACTER HANDLER ======
+local function onCharacter(char)
+    character = char
+    hrp = char:WaitForChild("HumanoidRootPart", 5)
+end
+
+player.CharacterAdded:Connect(onCharacter)
+if player.Character then
+    onCharacter(player.Character)
+end
 
 -- ====== ANTI AFK ======
 player.Idled:Connect(function()
@@ -34,29 +46,7 @@ player.Idled:Connect(function()
     VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 end)
 
--- ====== NOCLIP ALWAYS ON ======
-RunService.Stepped:Connect(function()
-    if not character then return end
-    for _,v in ipairs(character:GetDescendants()) do
-        if v:IsA("BasePart") then
-            v.CanCollide = false
-        end
-    end
-end)
-
--- ====== ANTI FLING + NOCLIP (IY STYLE FINAL) ======
-local AntiFling = true
-
--- disable collision antar player (inti Infinite Yield)
-local function disableCollision(char)
-    for _,v in ipairs(char:GetDescendants()) do
-        if v:IsA("BasePart") then
-            v.CanCollide = false
-        end
-    end
-end
-
--- bersihin force berbahaya
+-- ====== FORCE CLEANER ======
 local function cleanForces(root)
     for _,v in ipairs(root:GetDescendants()) do
         if v:IsA("BodyVelocity")
@@ -69,30 +59,48 @@ local function cleanForces(root)
     end
 end
 
+-- ====== AUTO FARM + ANTI FLING (IY STYLE) ======
 RunService.Heartbeat:Connect(function()
-    if not AntiFling or not character or not hrp then return end
+    if not character or not hrp then return end
 
-    -- 1️⃣ noclip / no player collision
-    disableCollision(character)
-
-    local lv = hrp.AssemblyLinearVelocity
-    local av = hrp.AssemblyAngularVelocity
-
-    -- 2️⃣ clamp velocity (HALUS, BUKAN FREEZE)
-    if lv.Magnitude > 90 then
-        hrp.AssemblyLinearVelocity = lv.Unit * 25
+    -- NOCLIP / NO PLAYER COLLISION
+    for _,v in ipairs(character:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.CanCollide = false
+        end
     end
 
-    if av.Magnitude > 60 then
-        hrp.AssemblyAngularVelocity = Vector3.zero
+    -- AUTO FARM LOGIC
+    if AutoFarm then
+        local now = tick()
+        if now - lastTP >= TP_INTERVAL then
+            local dist = (hrp.Position - AutoFarmCFrame.Position).Magnitude
+            local fall = hrp.Position.Y < (AutoFarmCFrame.Position.Y - FALL_OFFSET)
+            if dist > MAX_DISTANCE or fall then
+                hrp.CFrame = AutoFarmCFrame
+                lastTP = now
+            end
+        end
     end
 
-    -- 3️⃣ emergency (kalau fling brutal)
-    if lv.Magnitude > 150 or av.Magnitude > 120 then
-        cleanForces(hrp)
+    -- ANTI FLING (INFINITE YIELD FEEL)
+    if AntiFling then
+        local lv = hrp.AssemblyLinearVelocity
+        local av = hrp.AssemblyAngularVelocity
+
+        if lv.Magnitude > MAX_LIN_VEL then
+            hrp.AssemblyLinearVelocity = lv.Unit * 25
+        end
+
+        if av.Magnitude > MAX_ANG_VEL then
+            hrp.AssemblyAngularVelocity = Vector3.zero
+        end
+
+        if lv.Magnitude > 150 or av.Magnitude > 120 then
+            cleanForces(hrp)
+        end
     end
 end)
-
 
 -- ====== GUI ======
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
