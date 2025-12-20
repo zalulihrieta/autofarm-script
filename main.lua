@@ -75,6 +75,32 @@ if player.Character then
     onCharacter(player.Character)
 end
 
+-- ====== GHOST MODE FIX (MOVABLE) ======
+local GhostMode = true
+
+RunService.Heartbeat:Connect(function()
+    if not GhostMode or not character then return end
+
+    for _,v in ipairs(character:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.CanCollide = false
+            v.Massless = (v ~= hrp) -- HRP TETAP PUNYA MASS
+        end
+    end
+
+    if hrp then
+        local lv = hrp.AssemblyLinearVelocity
+        local av = hrp.AssemblyAngularVelocity
+
+        if lv.Magnitude > MAX_LIN_VEL or av.Magnitude > MAX_ANG_VEL then
+            clearForces(hrp)
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
+        end
+    end
+end)
+
+
 -- ====== GHOST MODE ======
 local GhostMode = true -- ON by default
 
