@@ -192,24 +192,55 @@ UserInputService.InputBegan:Connect(function(i,gp)
     end
 end)
 
--- Notifications
-local userId = Players:GetUserIdFromNameAsync("zaluli_hrieta")
-local thumbType = Enum.ThumbnailType.HeadShot
-local thumbSize = Enum.ThumbnailSize.Size420x420
-local content = Players:GetUserThumbnailAsync(userId, thumbType, thumbSize)
-StarterGui:SetCore("SendNotification",{Title="Auto Farm", Text="Modified", Icon=content, Duration=5})
-StarterGui:SetCore("SendNotification",{Title="Credits", Text="Original by Yumm Scriptblox", Icon=content, Duration=5})
-StarterGui:SetCore("SendNotification",{Title="Credits", Text="Edited by Zeus", Icon=content, Duration=5})
+-- Services
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local TextChatService = game:GetService("TextChatService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Chat message
+-- Get UserId safely
+local userId
+pcall(function()
+    userId = Players:GetUserIdFromNameAsync("zaluli_hrieta")
+end)
+
+-- Thumbnail
+local content = ""
+if userId then
+    local thumbType = Enum.ThumbnailType.HeadShot
+    local thumbSize = Enum.ThumbnailSize.Size420x420
+    content = Players:GetUserThumbnailAsync(userId, thumbType, thumbSize)
+end
+
+-- Notifications
+local function Notify(title, text)
+    StarterGui:SetCore("SendNotification", {
+        Title = title,
+        Text = text,
+        Icon = content,
+        Duration = 5
+    })
+end
+
+Notify("Auto Farm", "Modified")
+Notify("Credits", "Original by zaluli Scriptblox")
+
+-- Chat Message
 local function SendChatMessage(msg)
     if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-        local textChannel = TextChatService.TextChannels.RBXGeneral
-        textChannel:SendAsync(msg)
+        local channel = TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+        if channel then
+            channel:SendAsync(msg)
+        end
     else
-        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg,"All")
+        ReplicatedStorage
+            :WaitForChild("DefaultChatSystemChatEvents")
+            :WaitForChild("SayMessageRequest")
+            :FireServer(msg, "All")
     end
 end
-SendChatMessage("i love LIL0DARKIE6 ")
+
+SendChatMessage("Halah Nyocot")
+
 
 print("AUTO FARM GOD MODE | Anti Admin Fling | By Zaluli_Hrieta")
