@@ -222,7 +222,8 @@ local function Notify(title, text)
     })
 end
 
-Notify("Auto Farm", "Modified")
+Notify("AUTO FARM", "Loaded Successfully")
+task.wait(0.3)
 Notify("Credits", "Original by zaluli Scriptblox")
 
 -- Chat Message
