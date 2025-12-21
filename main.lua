@@ -96,17 +96,6 @@ RunService.Heartbeat:Connect(function()
     -- admin / ring force cleaner
     clearForces(character)
 
-    -- velocity clamp
-    local lv = hrp.AssemblyLinearVelocity
-    local av = hrp.AssemblyAngularVelocity
-
-    if lv.Magnitude > 40 then
-        hrp.AssemblyLinearVelocity = Vector3.zero
-    end
-    if av.Magnitude > 60 then
-        hrp.AssemblyAngularVelocity = Vector3.zero
-    end
-
     -- emergency fling
     if lv.Magnitude > 150 or av.Magnitude > 150 then
         hrp.AssemblyLinearVelocity = Vector3.zero
