@@ -40,6 +40,20 @@ end
 player.CharacterAdded:Connect(onCharacter)
 if player.Character then onCharacter(player.Character) end
 
+--================ INFJUMP =================
+local UserInputService = game:GetService("UserInputService")
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        if input.KeyCode == Enum.KeyCode.Space then
+            if humanoid and humanoid.Health > 0 then
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+    end
+end)
+
 -- GHOST MODE + ANTI SUPER RING + ANTI ADMIN FLING
 local function clearForces(char)
     for _,v in ipairs(char:GetDescendants()) do
@@ -68,32 +82,6 @@ RunService.Heartbeat:Connect(function()
             v.Massless = true
         end
     end
-
--- ================= INFJUMP SIMPLE =================
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-
-local player = Players.LocalPlayer
-local humanoid = nil
-
--- pastikan humanoid selalu update saat respawn
-local function onCharacter(char)
-    humanoid = char:WaitForChild("Humanoid")
-end
-player.CharacterAdded:Connect(onCharacter)
-if player.Character then onCharacter(player.Character) end
-
--- infinite jump
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.UserInputType == Enum.UserInputType.Keyboard then
-        if input.KeyCode == Enum.KeyCode.Space then
-            if humanoid and humanoid.Health > 0 then
-                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-            end
-        end
-    end
-end)
     
     -- admin / ring force cleaner
     clearForces(character)
