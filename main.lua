@@ -12,8 +12,8 @@ local GameAreaCFrame = CFrame.new(-104, 48, 11)
 
 -- ====== CONFIG ======
 local TP_INTERVAL  = 0.6
-local MAX_DISTANCE = 10
-local FALL_OFFSET  = 12
+local MAX_DISTANCE = 5
+local FALL_OFFSET  = 5
 
 -- ====== STATE ======
 local AutoFarm = false
@@ -39,38 +39,6 @@ local function onCharacter(char)
 end
 player.CharacterAdded:Connect(onCharacter)
 if player.Character then onCharacter(player.Character) end
-
--- GHOST MODE + ANTI SUPER RING + ANTI ADMIN FLING
-local function clearForces(char)
-    for _,v in ipairs(char:GetDescendants()) do
-        if v:IsA("BodyVelocity")
-        or v:IsA("BodyAngularVelocity")
-        or v:IsA("BodyForce")
-        or v:IsA("BodyGyro")
-        or v:IsA("BodyPosition")
-        or v:IsA("LinearVelocity")
-        or v:IsA("AngularVelocity")
-        or v:IsA("VectorForce")
-        or v:IsA("AlignPosition")
-        or v:IsA("AlignOrientation") then
-            v:Destroy()
-        end
-    end
-end
-
-RunService.Heartbeat:Connect(function()
-    if not character or not hrp then return end
-
-    -- GHOST MODE TOTAL
-    for _,v in ipairs(character:GetDescendants()) do
-        if v:IsA("BasePart") then
-            v.CanCollide = false
-            v.Massless = true
-        end
-    end
-    
-    -- admin / ring force cleaner
-    clearForces(character)
 
 -- AUTO FARM + ANTI FALL
 RunService.Heartbeat:Connect(function()
