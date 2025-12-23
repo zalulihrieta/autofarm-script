@@ -40,30 +40,6 @@ end
 player.CharacterAdded:Connect(onCharacter)
 if player.Character then onCharacter(player.Character) end
 
---================ INFJUMP BRUTAL =================
-local UserInputService = game:GetService("UserInputService")
-
--- humanoid selalu update
-local function setupInfJump(char)
-    local hum = char:WaitForChild("Humanoid")
-    
-    UserInputService.InputBegan:Connect(function(input, gp)
-        if gp then return end
-        if input.UserInputType == Enum.UserInputType.Keyboard then
-            if input.KeyCode == Enum.KeyCode.Space then
-                if hum and hum.Health > 0 then
-                    -- paksa lompat tanpa nge-reset velocity
-                    hum:ChangeState(Enum.HumanoidStateType.Jumping)
-                end
-            end
-        end
-    end)
-end
-
--- bind ke setiap spawn karakter
-player.CharacterAdded:Connect(setupInfJump)
-if player.Character then setupInfJump(player.Character) end
-
 -- GHOST MODE + ANTI SUPER RING + ANTI ADMIN FLING
 local function clearForces(char)
     for _,v in ipairs(char:GetDescendants()) do
@@ -95,14 +71,6 @@ RunService.Heartbeat:Connect(function()
     
     -- admin / ring force cleaner
     clearForces(character)
-
-    -- emergency fling
-    if lv.Magnitude > 150 or av.Magnitude > 150 then
-        hrp.AssemblyLinearVelocity = Vector3.zero
-        hrp.AssemblyAngularVelocity = Vector3.zero
-        hrp.CFrame = AutoFarmCFrame
-    end
-end)
 
 -- AUTO FARM + ANTI FALL
 RunService.Heartbeat:Connect(function()
