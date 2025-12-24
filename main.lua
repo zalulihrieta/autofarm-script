@@ -7,7 +7,7 @@ local player = Players.LocalPlayer
 
 -- ====== CFRAME ======
 local AutoFarmCFrame = CFrame.new(-280, 167, 341)
-local LobbyCFrame    = CFrame.new(-226, 180, 327)
+local LobbyCFrame    = CFrame.new(-296, 195, 370)
 local GameAreaCFrame = CFrame.new(-104, 48, 11)
 
 -- ====== CONFIG ======
@@ -39,6 +39,51 @@ local function onCharacter(char)
 end
 player.CharacterAdded:Connect(onCharacter)
 if player.Character then onCharacter(player.Character) end
+
+-- ====== NOCLIP + ANTI FLING (ALWAYS ON) ======
+
+local FLING_LIMIT = 65 -- sesuaikan hasil test (60–80 aman)
+local noclipConn
+
+-- APPLY NOCLIP
+local function EnableNoclip()
+    if noclipConn then return end
+    noclipConn = RunService.Stepped:Connect(function()
+        if character then
+            for _,v in ipairs(character:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    v.CanCollide = false
+                end
+            end
+        end
+    end)
+end
+
+-- ANTI FLING (LIMIT BASED, NO FREEZE)
+RunService.Heartbeat:Connect(function()
+    if not hrp then return end
+    if hrp.AssemblyLinearVelocity.Magnitude > FLING_LIMIT then
+        hrp.AssemblyLinearVelocity = Vector3.zero
+        hrp.AssemblyAngularVelocity = Vector3.zero
+    end
+end)
+
+-- CHARACTER HANDLER (RESPAWN SAFE)
+local function ApplyCharacter(char)
+    character = char
+    hrp = char:WaitForChild("HumanoidRootPart", 5)
+    task.wait()
+
+    if hrp then
+        hrp.AssemblyLinearVelocity = Vector3.zero
+        hrp.AssemblyAngularVelocity = Vector3.zero
+    end
+
+    EnableNoclip()
+end
+
+player.CharacterAdded:Connect(ApplyCharacter)
+if player.Character then ApplyCharacter(player.Character) end
 
 -- AUTO FARM + ANTI FALL
 RunService.Heartbeat:Connect(function()
