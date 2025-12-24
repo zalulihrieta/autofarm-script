@@ -7,7 +7,7 @@ local player = Players.LocalPlayer
 
 -- ====== CFRAME ======
 local AutoFarmCFrame = CFrame.new(-280, 167, 341)
-local LobbyCFrame    = CFrame.new(-226, 180, 327)
+local LobbyCFrame    = CFrame.new(-296, 195, 370)
 local GameAreaCFrame = CFrame.new(-104, 48, 11)
 
 -- ====== CONFIG ======
