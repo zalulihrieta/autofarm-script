@@ -106,13 +106,20 @@ gui.ResetOnSpawn = false
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0,240,0,245)
 frame.Position = UDim2.new(0.05,0,0.35,0)
-frame.BackgroundColor3 = Color3.fromRGB(28,28,28)
+frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+frame.BackgroundTransparency = 0.35
 frame.Active = true
 frame.Draggable = true
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
+
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,14)
+
+local stroke = Instance.new("UIStroke", frame)
+stroke.Color = Color3.fromRGB(255,255,255)
+stroke.Thickness = 1
+stroke.Transparency = 0.85
 
 local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1,0,0,30)
+title.Size = UDim2.new(1,0,0,35)
 title.BackgroundTransparency = 1
 title.Text = "AUTO FARM"
 title.Font = Enum.Font.GothamBold
@@ -121,37 +128,51 @@ title.TextColor3 = Color3.new(1,1,1)
 
 local function btn(txt,y)
     local b = Instance.new("TextButton", frame)
-    b.Size = UDim2.new(1,-20,0,35)
+    b.Size = UDim2.new(1,-20,0,36)
     b.Position = UDim2.new(0,10,0,y)
     b.Text = txt
     b.Font = Enum.Font.GothamBold
     b.TextSize = 14
-    b.BackgroundColor3 = Color3.fromRGB(55,55,55)
     b.TextColor3 = Color3.new(1,1,1)
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
+    b.BackgroundColor3 = Color3.fromRGB(120,120,120)
+    b.BackgroundTransparency = 0.45
+    b.AutoButtonColor = false
+
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0,10)
+
+    local s = Instance.new("UIStroke", b)
+    s.Color = Color3.fromRGB(255,255,255)
+    s.Thickness = 1
+    s.Transparency = 0.9
+
     return b
 end
 
-local autoBtn = btn("AUTO FARM : OFF",40)
-local lobbyBtn = btn("TP LOBBY",85)
-local gameBtn = btn("TP GAME AREA",130)
-local iyBtn = btn("INFINITE YIELD",175)
+local autoBtn  = btn("AUTO FARM : OFF",45)
+local lobbyBtn = btn("TP LOBBY",95)
+local gameBtn  = btn("TP GAME AREA",145)
+local iyBtn    = btn("INFINITE YIELD",195)
 
 autoBtn.MouseButton1Click:Connect(function()
     AutoFarm = not AutoFarm
     autoBtn.Text = AutoFarm and "AUTO FARM : ON" or "AUTO FARM : OFF"
-    if AutoFarm and hrp then hrp.CFrame = AutoFarmCFrame end
+    if AutoFarm and hrp then
+        hrp.CFrame = AutoFarmCFrame
+    end
 end)
+
 lobbyBtn.MouseButton1Click:Connect(function()
     AutoFarm = false
     autoBtn.Text = "AUTO FARM : OFF"
     if hrp then hrp.CFrame = LobbyCFrame end
 end)
+
 gameBtn.MouseButton1Click:Connect(function()
     AutoFarm = false
     autoBtn.Text = "AUTO FARM : OFF"
     if hrp then hrp.CFrame = GameAreaCFrame end
 end)
+
 iyBtn.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet(
         "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"
