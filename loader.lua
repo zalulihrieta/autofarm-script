@@ -2,6 +2,33 @@ local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
 local TextChatService = game:GetService("TextChatService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+
+local duration = 2
+local maxAngle = math.rad(5) -- SUPER KECIL (derajat)
+local speed = 10             -- pelan & smooth
+
+local startTime = tick()
+local baseCFrame = Camera.CFrame
+
+local conn
+conn = RunService.RenderStepped:Connect(function()
+	local t = tick() - startTime
+	if t >= duration then
+		conn:Disconnect()
+		Camera.CFrame = baseCFrame
+		return
+	end
+
+	-- ease in & out
+	local alpha = math.sin((t / duration) * math.pi)
+
+	-- jungkat-jungkit (roll)
+	local roll = math.sin(t * speed) * maxAngle * alpha
+
+	Camera.CFrame = baseCFrame * CFrame.Angles(0, 0, roll)
+end)
 
 -- Get UserId safely
 local userId
