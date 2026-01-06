@@ -112,6 +112,7 @@ local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0,240,0,245)
 frame.Position = UDim2.new(0.05,0,0.35,0)
 frame.BackgroundColor3 = Color3.fromRGB(28,28,28)
+frame.BackgroundTransparency = 0.40
 frame.Active = true
 frame.Draggable = true
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
