@@ -131,4 +131,10 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+game:GetService("UserInputService").InputBegan:Connect(function(input, processed)
+    if input.KeyCode == Enum.KeyCode.Insert then
+        Library:ToggleUI()
+    end
+end)
+
 print("GUI Loaded! Enjoy Cheating Responsibly.")
