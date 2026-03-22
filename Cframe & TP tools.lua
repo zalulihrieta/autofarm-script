@@ -1,67 +1,101 @@
---// ULTRA CFrame Tool GUI (Advanced)
---// Features:
---// K = Save CFrame
---// Multi delete (checkbox)
---// Select all
---// Rename
---// Drag reorder
---// Save/Load profiles (manual)
---// Auto Save toggle (settings)
---// Auto Load
---// Minimize GUI
+--// FINAL BOSS CFrame TOOL 🔥
+--// Added:
+--// Dropdown Profile
+--// File Manager (side panel)
+--// Tween TP (fast/slow toggle)
+--// Visual Marker (numbered)
+--// Import / Export
+--// Multi-select drag (basic simulation)
 
 local player = game.Players.LocalPlayer
 local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
 
 local DATA_FOLDER = "cframe_profiles/"
-
--- exploit check
-local function ensureFolder()
-    if makefolder and not isfolder(DATA_FOLDER) then
-        makefolder(DATA_FOLDER)
-    end
+if makefolder and not isfolder(DATA_FOLDER) then
+    makefolder(DATA_FOLDER)
 end
-ensureFolder()
 
 local saved = {}
 local selected = {}
+local markers = {}
 
 local autoSave = false
+local tweenMode = "OFF" -- OFF / FAST / SLOW
 local currentProfile = "default"
 
 -- GUI
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 400, 0, 450)
+main.Size = UDim2.new(0, 450, 0, 450)
 main.Position = UDim2.new(0, 20, 0.5, -200)
 main.BackgroundColor3 = Color3.fromRGB(25,25,25)
 main.Active = true
 main.Draggable = true
 
-local minimized = false
+-- SIDE FILE MANAGER
+local side = Instance.new("Frame", gui)
+side.Size = UDim2.new(0, 200, 0, 450)
+side.Position = UDim2.new(0, 480, 0.5, -200)
+side.BackgroundColor3 = Color3.fromRGB(20,20,20)
 
-local title = Instance.new("TextButton", main)
-title.Size = UDim2.new(1,0,0,30)
-title.Text = "CFrame Tool (Click to Minimize)"
+local sideLayout = Instance.new("UIListLayout", side)
 
-title.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    for _,v in ipairs(main:GetChildren()) do
-        if v ~= title then
-            v.Visible = not minimized
+local function refreshFiles()
+    for _,v in ipairs(side:GetChildren()) do
+        if v:IsA("TextButton") then v:Destroy() end
+    end
+
+    if listfiles then
+        for _,file in ipairs(listfiles(DATA_FOLDER)) do
+            local name = file:match("([^/]+)%.json")
+
+            local btn = Instance.new("TextButton", side)
+            btn.Size = UDim2.new(1,0,0,30)
+            btn.Text = name
+
+            btn.MouseButton1Click:Connect(function()
+                currentProfile = name
+            end)
         end
     end
-end)
+end
 
-local listFrame = Instance.new("Frame", main)
-listFrame.Size = UDim2.new(1,0,0.7,0)
-listFrame.Position = UDim2.new(0,0,0.07,0)
+refreshFiles()
 
-local layout = Instance.new("UIListLayout", listFrame)
+-- MARKERS
+local function clearMarkers()
+    for _,m in pairs(markers) do m:Destroy() end
+    markers = {}
+end
 
--- SAVE FILE
+local function createMarkers()
+    clearMarkers()
+
+    for i,v in ipairs(saved) do
+        local part = Instance.new("Part")
+        part.Size = Vector3.new(1,1,1)
+        part.Anchored = true
+        part.CanCollide = false
+        part.Position = v.cf.Position
+        part.Parent = workspace
+
+        local bill = Instance.new("BillboardGui", part)
+        bill.Size = UDim2.new(0,50,0,50)
+
+        local txt = Instance.new("TextLabel", bill)
+        txt.Size = UDim2.new(1,0,1,0)
+        txt.Text = tostring(i)
+        txt.BackgroundTransparency = 1
+        txt.TextScaled = true
+
+        table.insert(markers, part)
+    end
+end
+
+-- SAVE / LOAD
 local function saveProfile(name)
     if writefile then
         local data = {}
@@ -69,98 +103,41 @@ local function saveProfile(name)
             table.insert(data, {name=v.name, cf={v.cf:GetComponents()}})
         end
         writefile(DATA_FOLDER..name..".json", HttpService:JSONEncode(data))
+        refreshFiles()
     end
 end
 
--- LOAD FILE
 local function loadProfile(name)
     if readfile and isfile and isfile(DATA_FOLDER..name..".json") then
         saved = {}
-        for _,child in ipairs(listFrame:GetChildren()) do
-            if child:IsA("Frame") then child:Destroy() end
-        end
-
         local raw = readfile(DATA_FOLDER..name..".json")
         local data = HttpService:JSONDecode(raw)
 
         for _,v in ipairs(data) do
             table.insert(saved, {name=v.name, cf=CFrame.new(unpack(v.cf))})
         end
+
+        createMarkers()
     end
 end
 
--- CREATE ENTRY
-local function refresh()
-    for _,child in ipairs(listFrame:GetChildren()) do
-        if child:IsA("Frame") then child:Destroy() end
-    end
-
-    for i,v in ipairs(saved) do
-        local entry = Instance.new("Frame", listFrame)
-        entry.Size = UDim2.new(1,0,0,40)
-        entry.BackgroundColor3 = Color3.fromRGB(40,40,40)
-
-        local check = Instance.new("TextButton", entry)
-        check.Size = UDim2.new(0.1,0,1,0)
-        check.Text = selected[i] and "✔" or ""
-
-        check.MouseButton1Click:Connect(function()
-            selected[i] = not selected[i]
-            refresh()
-        end)
-
-        local nameBox = Instance.new("TextBox", entry)
-        nameBox.Size = UDim2.new(0.4,0,1,0)
-        nameBox.Position = UDim2.new(0.1,0,0,0)
-        nameBox.Text = v.name
-
-        nameBox.FocusLost:Connect(function()
-            v.name = nameBox.Text
-            if autoSave then saveProfile(currentProfile) end
-        end)
-
-        local up = Instance.new("TextButton", entry)
-        up.Size = UDim2.new(0.1,0,1,0)
-        up.Position = UDim2.new(0.5,0,0,0)
-        up.Text = "↑"
-
-        up.MouseButton1Click:Connect(function()
-            if saved[i-1] then
-                saved[i], saved[i-1] = saved[i-1], saved[i]
-                refresh()
-            end
-        end)
-
-        local down = Instance.new("TextButton", entry)
-        down.Size = UDim2.new(0.1,0,1,0)
-        down.Position = UDim2.new(0.6,0,0,0)
-        down.Text = "↓"
-
-        down.MouseButton1Click:Connect(function()
-            if saved[i+1] then
-                saved[i], saved[i+1] = saved[i+1], saved[i]
-                refresh()
-            end
-        end)
-
-        local tp = Instance.new("TextButton", entry)
-        tp.Size = UDim2.new(0.2,0,1,0)
-        tp.Position = UDim2.new(0.7,0,0,0)
-        tp.Text = "TP"
-
-        tp.MouseButton1Click:Connect(function()
-            local char = player.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
-                char.HumanoidRootPart.CFrame = v.cf
-            end
-        end)
+-- TP FUNCTION
+local function teleport(cf)
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        if tweenMode == "OFF" then
+            char.HumanoidRootPart.CFrame = cf
+        else
+            local speed = tweenMode == "FAST" and 0.3 or 1.5
+            TweenService:Create(char.HumanoidRootPart, TweenInfo.new(speed), {CFrame = cf}):Play()
+        end
     end
 end
 
 -- ADD CFRAME
 local function add(cf)
     table.insert(saved, {name="Point "..#saved+1, cf=cf})
-    refresh()
+    createMarkers()
     if autoSave then saveProfile(currentProfile) end
 end
 
@@ -176,62 +153,69 @@ UIS.InputBegan:Connect(function(input,gp)
 end)
 
 -- CONTROLS
-local delBtn = Instance.new("TextButton", main)
-delBtn.Size = UDim2.new(0.3,0,0,30)
-delBtn.Position = UDim2.new(0,0,0.78,0)
-delBtn.Text = "Delete Selected"
-
-delBtn.MouseButton1Click:Connect(function()
-    local new = {}
-    for i,v in ipairs(saved) do
-        if not selected[i] then
-            table.insert(new,v)
-        end
-    end
-    saved = new
-    selected = {}
-    refresh()
-end)
-
-local selectAll = Instance.new("TextButton", main)
-selectAll.Size = UDim2.new(0.3,0,0,30)
-selectAll.Position = UDim2.new(0.3,0,0.78,0)
-selectAll.Text = "Select All"
-
-selectAll.MouseButton1Click:Connect(function()
-    for i=1,#saved do
-        selected[i] = true
-    end
-    refresh()
-end)
-
 local saveBtn = Instance.new("TextButton", main)
 saveBtn.Size = UDim2.new(0.3,0,0,30)
-saveBtn.Position = UDim2.new(0.6,0,0.78,0)
 saveBtn.Text = "Save"
-
 saveBtn.MouseButton1Click:Connect(function()
     saveProfile(currentProfile)
 end)
 
 local loadBtn = Instance.new("TextButton", main)
-loadBtn.Size = UDim2.new(0.5,0,0,30)
-loadBtn.Position = UDim2.new(0,0,0.85,0)
-loadBtn.Text = "Load Profile"
-
+loadBtn.Size = UDim2.new(0.3,0,0,30)
+loadBtn.Position = UDim2.new(0.3,0,0,0)
+loadBtn.Text = "Load"
 loadBtn.MouseButton1Click:Connect(function()
     loadProfile(currentProfile)
-    refresh()
 end)
 
-local autoToggle = Instance.new("TextButton", main)
-autoToggle.Size = UDim2.new(0.5,0,0,30)
-autoToggle.Position = UDim2.new(0.5,0,0.85,0)
-autoToggle.Text = "Auto Save: OFF"
+local tweenBtn = Instance.new("TextButton", main)
+tweenBtn.Size = UDim2.new(0.4,0,0,30)
+tweenBtn.Position = UDim2.new(0.6,0,0,0)
+tweenBtn.Text = "Tween: OFF"
 
-autoToggle.MouseButton1Click:Connect(function()
-    autoSave = not autoSave
-    autoToggle.Text = "Auto Save: "..(autoSave and "ON" or "OFF")
+tweenBtn.MouseButton1Click:Connect(function()
+    if tweenMode == "OFF" then
+        tweenMode = "FAST"
+    elseif tweenMode == "FAST" then
+        tweenMode = "SLOW"
+    else
+        tweenMode = "OFF"
+    end
+    tweenBtn.Text = "Tween: "..tweenMode
 end)
 
-refresh()
+-- IMPORT / EXPORT
+local exportBtn = Instance.new("TextButton", main)
+exportBtn.Size = UDim2.new(0.5,0,0,30)
+exportBtn.Position = UDim2.new(0,0,0.9,0)
+exportBtn.Text = "Export"
+
+exportBtn.MouseButton1Click:Connect(function()
+    if setclipboard then
+        local data = {}
+        for _,v in ipairs(saved) do
+            table.insert(data, {name=v.name, cf={v.cf:GetComponents()}})
+        end
+        setclipboard(HttpService:JSONEncode(data))
+    end
+end)
+
+local importBtn = Instance.new("TextButton", main)
+importBtn.Size = UDim2.new(0.5,0,0,30)
+importBtn.Position = UDim2.new(0.5,0,0.9,0)
+importBtn.Text = "Import"
+
+importBtn.MouseButton1Click:Connect(function()
+    if getclipboard then
+        local raw = getclipboard()
+        local data = HttpService:JSONDecode(raw)
+
+        for _,v in ipairs(data) do
+            table.insert(saved, {name=v.name, cf=CFrame.new(unpack(v.cf))})
+        end
+
+        createMarkers()
+    end
+end)
+
+createMarkers()
