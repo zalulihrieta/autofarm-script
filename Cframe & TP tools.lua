@@ -1,7 +1,8 @@
 --// FINAL BOSS CFrame TOOL (Rayfield UI Version)
 --// Require Rayfield
 
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- FIXED Rayfield loader (working)
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
 
 local player = game.Players.LocalPlayer
 local UIS = game:GetService("UserInputService")
