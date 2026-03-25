@@ -2,153 +2,134 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
--- KOORDINAT DEX (STRICT)
+-- === [ 1. ANTI-DOUBLE SYSTEM ] ===
+-- Bagian ini bakal hapus script lama sebelum jalanin yang baru
+local oldUI = player.PlayerGui:FindFirstChild("CDID_FINAL_ULTIMATE")
+if oldUI then 
+    oldUI:Destroy() 
+    print("Script lama dihapus, menjalankan versi terbaru...")
+end
+
+-- DATA KOORDINAT
 local DA0ZA_POS = Vector3.new(-7.834, 3.018, 441.855)
 local CP_LIST = {
-    Vector3.new(125.047, 18.230, -415.173), Vector3.new(127.560, 18.230, -1272.893),
-    Vector3.new(-175.222, 9.898, -2039.384), Vector3.new(-1010.847, 10.851, -2169.610),
-    Vector3.new(-1857.361, 0.708, -2229.303), Vector3.new(-2649.200, -14.205, -2553.579),
-    Vector3.new(-3327.876, -23.301, -3053.103), Vector3.new(-2962.862, -17.169, -3810.042),
-    Vector3.new(-2546.484, -17.120, -4562.124), Vector3.new(-2130.460, -29.626, -5311.785),
-    Vector3.new(-1700.404, -25.409, -6054.656), Vector3.new(-1254.418, -61.608, -6785.946),
-    Vector3.new(-940.448, -43.987, -7579.504), Vector3.new(-1479.288, -39.616, -8167.926),
-    Vector3.new(-2229.668, -41.489, -8583.870), Vector3.new(-2952.909, -33.532, -9039.446),
-    Vector3.new(-3522.562, -29.659, -9674.159), Vector3.new(-3933.819, -13.608, -10423.113),
-    Vector3.new(-3813.763, -12.947, -11209.539), Vector3.new(-3271.031, -72.941, -11870.837),
-    Vector3.new(-2767.282, -55.455, -12562.348), Vector3.new(-2530.257, -27.704, -13351.724),
-    Vector3.new(-2810.242, -23.909, -14163.191), Vector3.new(-3094.182, -21.090, -14972.988),
-    Vector3.new(-3364.902, -33.049, -15785.451), Vector3.new(-3503.131, -19.988, -16630.316),
-    Vector3.new(-3555.158, -61.729, -17485.587), Vector3.new(-3575.711, -73.812, -18341.179),
-    Vector3.new(-3561.621, -48.363, -19198.789), Vector3.new(-3540.583, -60.502, -20055.285),
-    Vector3.new(-3435.471, -80.040, -20905.476), Vector3.new(-3291.044, -35.812, -21748.630),
-    Vector3.new(-3142.453, -62.217, -22593.580), Vector3.new(-3129.451, -64.569, -23452.416),
-    Vector3.new(-3131.285, -64.569, -24310.808), Vector3.new(-3131.408, -64.871, -25169.212),
-    Vector3.new(-3131.311, -47.549, -26026.867), Vector3.new(-3129.580, -64.569, -26883.441),
-    Vector3.new(-3129.035, -64.569, -27743.273)
+    Vector3.new(125.047, 18.23, -415.17), Vector3.new(127.56, 18.23, -1272.89),
+    Vector3.new(-175.22, 9.89, -2039.38), Vector3.new(-1010.84, 10.85, -2169.61),
+    Vector3.new(-1857.36, 0.70, -2229.30), Vector3.new(-2649.20, -14.20, -2553.57),
+    Vector3.new(-3327.87, -23.30, -3053.10), Vector3.new(-2962.86, -17.16, -3810.04),
+    Vector3.new(-2546.48, -17.12, -4562.12), Vector3.new(-2130.46, -29.62, -5311.78),
+    Vector3.new(-1700.40, -25.40, -6054.65), Vector3.new(-1254.41, -61.60, -6785.94),
+    Vector3.new(-940.44, -43.98, -7579.50), Vector3.new(-1479.28, -39.61, -8167.92),
+    Vector3.new(-2229.66, -41.48, -8583.87), Vector3.new(-2952.90, -33.53, -9039.44),
+    Vector3.new(-3522.56, -29.65, -9674.15), Vector3.new(-3933.81, -13.60, -10423.11),
+    Vector3.new(-3813.76, -12.94, -11209.53), Vector3.new(-3271.03, -72.94, -11870.83),
+    Vector3.new(-2767.28, -55.45, -12562.34), Vector3.new(-2530.25, -27.70, -13351.72),
+    Vector3.new(-2810.24, -23.90, -14163.19), Vector3.new(-3094.18, -21.09, -14972.98),
+    Vector3.new(-3364.90, -33.04, -15785.45), Vector3.new(-3503.13, -19.98, -16630.31),
+    Vector3.new(-3555.15, -61.72, -17485.58), Vector3.new(-3575.71, -73.81, -18341.17),
+    Vector3.new(-3561.62, -48.36, -19198.78), Vector3.new(-3540.58, -60.50, -20055.28),
+    Vector3.new(-3435.47, -80.04, -20905.47), Vector3.new(-3291.04, -35.81, -21748.63),
+    Vector3.new(-3142.45, -62.21, -22593.58), Vector3.new(-3129.45, -64.56, -23452.41),
+    Vector3.new(-3131.28, -64.56, -24310.80), Vector3.new(-3131.40, -64.87, -25169.21),
+    Vector3.new(-3131.31, -47.54, -26026.86), Vector3.new(-3129.58, -64.56, -26883.44),
+    Vector3.new(-3129.03, -64.56, -27743.27)
 }
 
--- SETUP UI
-local sg = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-sg.Name = "CDID_RACE_V9"
+local autoRacing = false
+local SPAM_TIME = 4 -- [[ EDIT DI SINI: Detik tiap CP ]]
+
+-- UI SETUP
+local sg = Instance.new("ScreenGui", player.PlayerGui)
+sg.Name = "CDID_FINAL_ULTIMATE"
 sg.ResetOnSpawn = false
 
 local main = Instance.new("Frame", sg)
-main.Size = UDim2.new(0, 310, 0, 260)
-main.Position = UDim2.new(0.5, -155, 0.4, 0)
-main.BackgroundColor3 = Color3.fromRGB(25,25,25)
-main.BorderSizePixel = 0
-main.Active = true
+main.Size = UDim2.new(0, 220, 0, 180); main.Position = UDim2.new(0.5, -110, 0.4, 0)
+main.BackgroundColor3 = Color3.fromRGB(15, 15, 15); main.Active = true; main.Draggable = true
 
-local topBar = Instance.new("TextLabel", main)
-topBar.Size = UDim2.new(1, 0, 0, 30)
-topBar.Text = "  CDID RACE TP (DRAG HERE)"
-topBar.BackgroundColor3 = Color3.fromRGB(150,0,0)
-topBar.TextColor3 = Color3.new(1,1,1)
-topBar.Font = Enum.Font.GothamBold
-topBar.TextXAlignment = Enum.TextXAlignment.Left
+local top = Instance.new("TextLabel", main)
+top.Size = UDim2.new(1, 0, 0, 30); top.Text = "AUTO RACE V14"; top.BackgroundColor3 = Color3.fromRGB(120, 0, 0); top.TextColor3 = Color3.new(1, 1, 1)
 
-local npcFrame = Instance.new("Frame", main)
-npcFrame.Size = UDim2.new(0, 100, 1, -30)
-npcFrame.Position = UDim2.new(0, 0, 0, 30)
-npcFrame.BackgroundColor3 = Color3.fromRGB(35,35,35)
-
-local cpFrame = Instance.new("ScrollingFrame", main)
-cpFrame.Size = UDim2.new(0, 210, 1, -30)
-cpFrame.Position = UDim2.new(0, 100, 0, 30)
-cpFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-cpFrame.CanvasSize = UDim2.new(0,0,0, 1400)
-cpFrame.ScrollBarThickness = 6
-
-local layout = Instance.new("UIListLayout", cpFrame)
-layout.Padding = UDim.new(0, 2)
-
--- FUNGSI DRAG (STABLE)
-local dragging, dragStart, startPos
-topBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true dragStart = input.Position startPos = main.Position
-    end
-end)
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - dragStart
-        main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
-    end
-end)
-
--- FUNGSI TELEPORT ULTIMATE (PIVOT + VELOCITY RESET)
-local function forceTP(pos)
+-- FUNGSI TP
+local function spamTP(pos, duration)
     local char = player.Character
     if not char then return end
-    
-    local targetCFrame = CFrame.new(pos + Vector3.new(0, 3, 0))
     local hum = char:FindFirstChildOfClass("Humanoid")
+    local moveTarget = char:FindFirstChild("HumanoidRootPart")
     
-    -- Cek Kendaraan
-    local objToMove = char:FindFirstChild("HumanoidRootPart")
-    if hum and hum.SeatPart and hum.SeatPart:IsA("VehicleSeat") then
-        local car = hum.SeatPart.Parent
-        while car and not car:IsA("Model") do car = car.Parent end
-        if car then objToMove = car end
+    if hum and hum.SeatPart then 
+        moveTarget = hum.SeatPart 
     end
 
-    if objToMove then
-        -- Matikan Kecepatan (Penting agar tidak mental)
-        if objToMove:IsA("Model") then
-            for _, p in pairs(objToMove:GetDescendants()) do
-                if p:IsA("BasePart") then
-                    p.AssemblyLinearVelocity = Vector3.zero
-                    p.AssemblyAngularVelocity = Vector3.zero
-                end
-            end
-            objToMove:PivotTo(targetCFrame) -- Metode terbaru Roblox untuk pindah model
-        else
-            objToMove.AssemblyLinearVelocity = Vector3.zero
-            objToMove.CFrame = targetCFrame
+    if moveTarget then
+        local start = tick()
+        -- Loop Milidetik
+        while tick() - start < duration and autoRacing do
+            if not char.Parent then break end -- Berhenti kalau mati
+            moveTarget.CFrame = CFrame.new(pos + Vector3.new(0, 3.5, 0))
+            moveTarget.AssemblyLinearVelocity = Vector3.zero
+            moveTarget.AssemblyAngularVelocity = Vector3.zero
+            task.wait() 
         end
     end
 end
 
--- BUTTON BUILDER
-local function addBtn(txt, pos, parent, color)
-    local b = Instance.new("TextButton", parent)
-    b.Size = UDim2.new(1, -10, 0, 32)
-    b.Text = txt
-    b.BackgroundColor3 = color or Color3.fromRGB(50,50,50)
-    b.TextColor3 = Color3.new(1,1,1)
-    b.Font = Enum.Font.SourceSansBold
-    b.MouseButton1Click:Connect(function() forceTP(pos) end)
-end
-
-addBtn("START NPC", DA0ZA_POS, npcFrame, Color3.fromRGB(0, 120, 0))
-for i, p in ipairs(CP_LIST) do
-    local lab = (i == #CP_LIST) and "FINISH" or "CP "..i
-    local col = (i == #CP_LIST) and Color3.fromRGB(0, 80, 200) or nil
-    addBtn(lab, p, cpFrame, col)
-end
-
--- MINIMIZE & TOGGLE
-local isVisible = true
-local function toggle()
-    isVisible = not isVisible
-    npcFrame.Visible = isVisible
-    cpFrame.Visible = isVisible
-    main.Size = isVisible and UDim2.new(0, 310, 0, 260) or UDim2.new(0, 310, 0, 30)
-end
-
-local minBtn = Instance.new("TextButton", main)
-minBtn.Size = UDim2.new(0, 30, 0, 30)
-minBtn.Position = UDim2.new(1, -30, 0, 0)
-minBtn.Text = "_"
-minBtn.BackgroundColor3 = Color3.fromRGB(100,0,0)
-minBtn.TextColor3 = Color3.new(1,1,1)
-minBtn.MouseButton1Click:Connect(toggle)
-
-UserInputService.InputBegan:Connect(function(i, g)
-    if not g and i.KeyCode == Enum.KeyCode.RightControl then toggle() end
+-- BUTTONS
+local npcBtn = Instance.new("TextButton", main)
+npcBtn.Size = UDim2.new(1, -20, 0, 35); npcBtn.Position = UDim2.new(0, 10, 0, 40)
+npcBtn.Text = "NPC DA0ZA"; npcBtn.BackgroundColor3 = Color3.fromRGB(0, 80, 0); npcBtn.TextColor3 = Color3.new(1,1,1)
+npcBtn.MouseButton1Click:Connect(function() 
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(DA0ZA_POS + Vector3.new(0, 5, 0))
+    end
 end)
+
+local startBtn = Instance.new("TextButton", main)
+startBtn.Size = UDim2.new(1, -20, 0, 35); startBtn.Position = UDim2.new(0, 10, 0, 85)
+startBtn.Text = "START AUTO"; startBtn.BackgroundColor3 = Color3.fromRGB(0, 50, 150); startBtn.TextColor3 = Color3.new(1,1,1)
+
+local status = Instance.new("TextLabel", main)
+status.Size = UDim2.new(1, 0, 0, 30); status.Position = UDim2.new(0, 0, 0, 130); status.Text = "Ready"; status.TextColor3 = Color3.new(1,1,1); status.BackgroundTransparency = 1
+
+startBtn.MouseButton1Click:Connect(function()
+    autoRacing = not autoRacing
+    startBtn.Text = autoRacing and "STOP" or "START"
+    startBtn.BackgroundColor3 = autoRacing and Color3.fromRGB(150,0,0) or Color3.fromRGB(0, 50, 150)
+end)
+
+-- LOOP UTAMA
+task.spawn(function()
+    while true do
+        if autoRacing then
+            for i = 1, #CP_LIST do
+                if not autoRacing then break end
+                status.Text = "Progress: " .. i .. "/" .. #CP_LIST
+                
+                -- Jalankan Spam
+                spamTP(CP_LIST[i], SPAM_TIME)
+                
+                -- Cek apa karakter masih hidup
+                if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health <= 0 then
+                    autoRacing = false
+                    status.Text = "DEAD - STOPPED"
+                    break
+                end
+                
+                task.wait(0.2) -- Jeda pindah
+            end
+            autoRacing = false
+        end
+        task.wait(0.5)
+    end
+end)
+
+-- MINIMIZE
+local vis = true
+local min = Instance.new("TextButton", main)
+min.Size = UDim2.new(0, 30, 0, 30); min.Position = UDim2.new(1, -30, 0, 0); min.Text = "_"; min.BackgroundColor3 = Color3.fromRGB(80,0,0); min.TextColor3 = Color3.new(1,1,1)
+min.MouseButton1Click:Connect(function()
+    vis = not vis
+    npcBtn.Visible = vis; startBtn.Visible = vis; status.Visible = vis
+    main.Size = vis and UDim2.new(0, 220, 0, 180) or UDim2.new(0, 220, 0, 30)
+end)
+UserInputService.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.RightControl then min:Click() end end)
