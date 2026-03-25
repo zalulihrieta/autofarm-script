@@ -36,7 +36,7 @@ local CP_LIST = {
 }
 
 local autoRacing = false
-local SPAM_TIME = 4 -- [[ EDIT DI SINI: Detik tiap CP ]]
+local SPAM_TIME = 5 -- [[ EDIT DI SINI: Detik tiap CP ]]
 
 -- UI SETUP
 local sg = Instance.new("ScreenGui", player.PlayerGui)
