@@ -1,74 +1,66 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("ESP Chams Auto-Update", "DarkScene")
+local Window = Library.CreateLib("Zaluli Multi-Hack (Chams + Aimbot)", "DarkScene")
 
-local Tab = Window:NewTab("Main")
-local Section = Tab:NewSection("Visuals")
+-- Tab Utama
+local MainTab = Window:NewTab("Combat & Visuals")
+local VisualSection = MainTab:NewSection("ESP Settings")
+local CombatSection = MainTab:NewSection("Aimbot Settings")
 
--- State Global
+-- [ LOGIC ESP CHAMS ]
 _G.ChamsEnabled = false
-local chamsColor = Color3.fromRGB(255, 0, 100) -- Warna Pink/Merah Terang
-local outlineColor = Color3.fromRGB(255, 255, 255) -- Outline Putih
+local chamsColor = Color3.fromRGB(0, 255, 150) -- Warna Hijau Cyan
+local outlineColor = Color3.fromRGB(255, 255, 255)
 
--- Fungsi Utama Create Chams
-local function createChams(player)
+local function applyChams(player)
     if player == game.Players.LocalPlayer then return end
     
-    local function apply(character)
-        if not character then return end
-        -- Tunggu sebentar agar model karakter terload sempurna
-        character:WaitForChild("HumanoidRootPart", 5)
-        
-        -- Hapus chams lama jika ada agar tidak double
-        if character:FindFirstChild("MyChams") then
-            character.MyChams:Destroy()
-        end
-
+    local function characterAdded(char)
+        char:WaitForChild("HumanoidRootPart", 5)
         if _G.ChamsEnabled then
+            if char:FindFirstChild("MyChams") then char.MyChams:Destroy() end
             local highlight = Instance.new("Highlight")
             highlight.Name = "MyChams"
             highlight.FillColor = chamsColor
             highlight.OutlineColor = outlineColor
             highlight.FillTransparency = 0.5
-            highlight.OutlineTransparency = 0
-            highlight.Adornee = character
-            highlight.Parent = character
+            highlight.Parent = char
         end
     end
 
-    -- Jalankan saat karakter muncul
-    player.CharacterAdded:Connect(apply)
-    
-    -- Jalankan jika karakter sudah ada di game
-    if player.Character then
-        apply(player.Character)
-    end
+    player.CharacterAdded:Connect(characterAdded)
+    if player.Character then characterAdded(player.Character) end
 end
 
--- Toggle UI (Kiri/Kanan)
-Section:NewToggle("ESP Chams", "Otomatis apply ke pemain baru & respawn", function(state)
+-- Toggle ESP (Switch Kiri/Kanan)
+VisualSection:NewToggle("Enable ESP Chams", "Lihat pemain tembus dinding", function(state)
     _G.ChamsEnabled = state
-    
-    if _G.ChamsEnabled then
-        -- Berikan chams ke semua orang yang sudah ada di server
-        for _, player in pairs(game.Players:GetPlayers()) do
-            createChams(player)
-        end
+    if state then
+        for _, p in pairs(game.Players:GetPlayers()) do applyChams(p) end
     else
-        -- Hapus semua chams saat toggle dimatikan
-        for _, player in pairs(game.Players:GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("MyChams") then
-                player.Character.MyChams:Destroy()
+        for _, p in pairs(game.Players:GetPlayers()) do
+            if p.Character and p.Character:FindFirstChild("MyChams") then
+                p.Character.MyChams:Destroy()
             end
         end
     end
 end)
 
--- AUTO APPLY: Deteksi Pemain Baru Join
-game.Players.PlayerAdded:Connect(function(newPlayer)
-    -- Jika toggle sedang ON, langsung pasang fungsi chams ke player baru
-    createChams(newPlayer)
+-- Auto-apply untuk pemain baru
+game.Players.PlayerAdded:Connect(applyChams)
+
+-- [ LOGIC AIMBOT ]
+CombatSection:NewButton("Load Equinox Aimbot", "Menjalankan script Aimbot eksternal", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Xxtan31/Equinox-Hub/main/aimbot.lua", true))()
 end)
 
-Section:NewKeybind("Minimize UI", "Tombol Right Control", Enum.KeyCode.RightControl, function()
-	Library:ToggleUI()
+-- Setting Tambahan
+local SettingTab = Window:NewTab("Settings")
+local ConfigSection = SettingTab:NewSection("Menu Config")
+
+ConfigSection:NewKeybind("Toggle Menu UI", "Tombol untuk buka/tutup menu", Enum.KeyCode.RightControl, function()
+    Library:ToggleUI()
+end)
+
+ConfigSection:NewButton("Destroy UI", "Menghapus menu dari layar", function()
+    game:GetService("CoreGui"):FindFirstChild("ESP Chams Auto-Update"):Destroy()
 end)
