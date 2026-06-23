@@ -1,7 +1,7 @@
 -- ====================================================================
--- Script Name: Gemini Mobile Hub (Sidebar Edition)
+-- Script Name: Hrieta Hub (Sidebar Edition)
 -- Author: Gemini (Optimized by Zaluli_Hrieta for Mobile)
--- Version: 2.5.0
+-- Version: 2.6.0
 -- Focus: Compact Sidebar Navigation for Android (Mayfield Style)
 -- ====================================================================
 
@@ -10,7 +10,7 @@ local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 
 -- 1. CLEAN UP PREVIOUS INSTANCES
-local existingGui = CoreGui:FindFirstChild("GeminiMobileHub")
+local existingGui = CoreGui:FindFirstChild("HrietaHubMobile")
 if existingGui then
     existingGui:Destroy()
 end
@@ -27,7 +27,7 @@ local Sidebar = Instance.new("Frame")
 local SidebarList = Instance.new("UIListLayout")
 local ContentArea = Instance.new("Frame")
 
-HrietaHub.Name = "HrietaHub"
+HrietaHub.Name = "HrietaHubMobile"
 HrietaHub.Parent = CoreGui
 HrietaHub.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
@@ -55,7 +55,7 @@ TitleLabel.BackgroundTransparency = 1
 TitleLabel.Size = UDim2.new(1, -40, 1, 0)
 TitleLabel.Position = UDim2.new(0, 10, 0, 0)
 TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "Hrieta Hub"
+TitleLabel.Text = "Hrieta Hub" -- NAMA DIUBAH MENJADI HRIETA HUB
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleLabel.TextSize = 14
 
@@ -77,7 +77,7 @@ Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 Sidebar.BackgroundTransparency = 0.5
 Sidebar.BorderSizePixel = 0
 Sidebar.Position = UDim2.new(0, 0, 0, 35)
-Sidebar.Size = UDim2.new(0, 75, 1, -35) -- Mengambil lebar 75px di sisi kiri
+Sidebar.Size = UDim2.new(0, 75, 1, -35)
 
 SidebarList.Parent = Sidebar
 SidebarList.SortOrder = Enum.SortOrder.LayoutOrder
@@ -95,7 +95,6 @@ local pages = {}
 local tabButtons = {}
 
 local function CreateTab(tabName, order)
-    -- Tombol di Sidebar
     local TabButton = Instance.new("TextButton")
     TabButton.Name = tabName .. "TabBtn"
     TabButton.Parent = Sidebar
@@ -108,7 +107,6 @@ local function CreateTab(tabName, order)
     TabButton.TextSize = 12
     TabButton.LayoutOrder = order
     
-    -- Container Halaman Konten (Scrolling)
     local Page = Instance.new("ScrollingFrame")
     Page.Name = tabName .. "Page"
     Page.Parent = ContentArea
@@ -127,13 +125,12 @@ local function CreateTab(tabName, order)
     pages[tabName] = Page
     tabButtons[tabName] = TabButton
     
-    -- Sistem Perpindahan Menu (Aktif/Nonaktif)
     TabButton.MouseButton1Click:Connect(function()
         for name, instance in pairs(pages) do
-            instance.visible = (name == tabName)
+            instance.Visible = (name == tabName)
             if name == tabName then
                 tabButtons[name].TextColor3 = Color3.fromRGB(255, 255, 255)
-                tabButtons[name].BackgroundColor3 = Color3.fromRGB(35, 100, 250) -- Highlight warna biru
+                tabButtons[name].BackgroundColor3 = Color3.fromRGB(35, 100, 250)
             else
                 tabButtons[name].TextColor3 = Color3.fromRGB(180, 180, 180)
                 tabButtons[name].BackgroundColor3 = Color3.fromRGB(25, 25, 30)
@@ -144,11 +141,9 @@ local function CreateTab(tabName, order)
     return Page
 end
 
--- Membuat halaman menu kiri
 local FarmPage = CreateTab("Farm", 1)
 local SettingPage = CreateTab("Setting", 2)
 
--- Aktifkan tab pertama secara default
 pages["Farm"].Visible = true
 tabButtons["Farm"].TextColor3 = Color3.fromRGB(255, 255, 255)
 tabButtons["Farm"].BackgroundColor3 = Color3.fromRGB(35, 100, 250)
@@ -200,13 +195,13 @@ MinimizeButton.MouseButton1Click:Connect(function()
         task.wait(0.1)
         Sidebar.Visible = false
         ContentArea.Visible = false
-        TitleLabel.Text = "Auto Farm" -- Mengubah teks penanda saat mengecil
+        TitleLabel.Text = "Auto Farm" -- Tetap menjadi "Auto Farm" saat dikecilkan
         MinimizeButton.Text = "+"
     else
         MainFrame:TweenSize(originalSize, Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.3, true)
         Sidebar.Visible = true
         ContentArea.Visible = true
-        TitleLabel.Text = "Gemini Hub v2"
+        TitleLabel.Text = "Hrieta Hub" -- Kembali ke nama utama saat dibuka
         MinimizeButton.Text = "-"
     end
 end)
@@ -215,7 +210,7 @@ end)
 -- 8. COMPONENT CREATION HELPER
 local function AddButtonToPage(page, text, callback)
     local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(1, -5, 0, 30) -- Compact untuk ruang kanan
+    Button.Size = UDim2.new(1, -5, 0, 30)
     Button.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
     Button.BorderSizePixel = 0
     Button.Font = Enum.Font.GothamMedium
@@ -236,12 +231,11 @@ local FarmBtn = AddButtonToPage(FarmPage, "Auto Farm: OFF", function()
     autoFarmActive = not autoFarmActive
     if autoFarmActive then
         FarmBtn.Text = "Auto Farm: ON"
-        FarmBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113) -- Hijau aktif
+        FarmBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
         
         task.spawn(function()
-            while autoFarmActive and GeminiHub.Parent do
-                print("[Gemini] Auto farming cycle running...")
-                -- Silakan tambahkan logika teleportasi / combat Anda di sini
+            while autoFarmActive and HrietaHub.Parent do
+                print("[Hrieta Hub] Auto farming cycle running...")
                 task.wait(1)
             end
         end)
@@ -252,7 +246,7 @@ local FarmBtn = AddButtonToPage(FarmPage, "Auto Farm: OFF", function()
 end)
 
 AddButtonToPage(FarmPage, "Teleport to Checkpoint", function()
-    print("[Gemini] Teleporting player...")
+    print("[Hrieta Hub] Teleporting player...")
 end)
 
 
@@ -268,7 +262,7 @@ AddButtonToPage(SettingPage, "Set Custom Speed (50)", function()
 end)
 
 AddButtonToPage(SettingPage, "Destroy Interface", function()
-    GeminiHub:Destroy()
+    HrietaHub:Destroy()
 end)
 
-print("Gemini Mobile Hub (Sidebar Layout) loaded successfully.")
+print("Hrieta Hub (Sidebar Layout) loaded successfully.")
