@@ -1,8 +1,9 @@
 -- ====================================================================
--- Script Name: Hrieta Hub (Sidebar Edition)
+-- Script Name: Hrieta Hub Framework (Cloud Module Edition)
 -- Author: Gemini (Optimized by Zaluli_Hrieta for Mobile)
--- Version: 2.6.0
--- Focus: Compact Sidebar Navigation for Android (Mayfield Style)
+-- Version: 3.0.0
+-- Focus: Framework UI Utama yang Siap Dipanggil dari Script Lain
+-- Repository: https://github.com/zalulihrieta/autofarm-script
 -- ====================================================================
 
 local Players = game:GetService("Players")
@@ -38,7 +39,7 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 MainFrame.BackgroundTransparency = 0.35 -- Semi-transparan tetap dipertahankan
 MainFrame.BorderSizePixel = 0
 MainFrame.Position = UDim2.new(0.5, -150, 0.5, -125)
-MainFrame.Size = UDim2.new(0, 300, 0, 250) -- UKURAN TIDAK DIUBAH
+MainFrame.Size = UDim2.new(0, 300, 0, 250)
 MainFrame.ClipsDescendants = true
 MainFrame.Active = true
 
@@ -55,7 +56,7 @@ TitleLabel.BackgroundTransparency = 1
 TitleLabel.Size = UDim2.new(1, -40, 1, 0)
 TitleLabel.Position = UDim2.new(0, 10, 0, 0)
 TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "Hrieta Hub" -- NAMA DIUBAH MENJADI HRIETA HUB
+TitleLabel.Text = "Hrieta Hub"
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleLabel.TextSize = 14
 
@@ -90,9 +91,10 @@ ContentArea.BackgroundTransparency = 1
 ContentArea.Position = UDim2.new(0, 80, 0, 40)
 ContentArea.Size = UDim2.new(1, -85, 1, -45)
 
--- 5. MULTI-TAB ENGINE (FARM & SETTING PAGES)
+-- 5. INTERNAL MULTI-TAB ENGINE
 local pages = {}
 local tabButtons = {}
+local firstTab = nil
 
 local function CreateTab(tabName, order)
     local TabButton = Instance.new("TextButton")
@@ -105,7 +107,7 @@ local function CreateTab(tabName, order)
     TabButton.Text = tabName
     TabButton.TextColor3 = Color3.fromRGB(180, 180, 180)
     TabButton.TextSize = 12
-    TabButton.LayoutOrder = order
+    TabButton.LayoutOrder = order or 1
     
     local Page = Instance.new("ScrollingFrame")
     Page.Name = tabName .. "Page"
@@ -125,6 +127,10 @@ local function CreateTab(tabName, order)
     pages[tabName] = Page
     tabButtons[tabName] = TabButton
     
+    if not firstTab then
+        firstTab = tabName
+    end
+    
     TabButton.MouseButton1Click:Connect(function()
         for name, instance in pairs(pages) do
             instance.Visible = (name == tabName)
@@ -140,14 +146,6 @@ local function CreateTab(tabName, order)
     
     return Page
 end
-
-local FarmPage = CreateTab("Farm", 1)
-local SettingPage = CreateTab("Setting", 2)
-
-pages["Farm"].Visible = true
-tabButtons["Farm"].TextColor3 = Color3.fromRGB(255, 255, 255)
-tabButtons["Farm"].BackgroundColor3 = Color3.fromRGB(35, 100, 250)
-
 
 -- 6. DRAG FUNCTIONALITY (Mobile & PC Touch Responsive)
 local dragging, dragInput, dragStart, startPos
@@ -183,7 +181,6 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
-
 -- 7. MINIMIZE SYSTEM TO "AUTO FARM"
 local minimized = false
 local originalSize = MainFrame.Size
@@ -195,19 +192,18 @@ MinimizeButton.MouseButton1Click:Connect(function()
         task.wait(0.1)
         Sidebar.Visible = false
         ContentArea.Visible = false
-        TitleLabel.Text = "Auto Farm" -- Tetap menjadi "Auto Farm" saat dikecilkan
+        TitleLabel.Text = "Auto Farm"
         MinimizeButton.Text = "+"
     else
         MainFrame:TweenSize(originalSize, Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.3, true)
         Sidebar.Visible = true
         ContentArea.Visible = true
-        TitleLabel.Text = "Hrieta Hub" -- Kembali ke nama utama saat dibuka
+        TitleLabel.Text = "Hrieta Hub"
         MinimizeButton.Text = "-"
     end
 end)
 
-
--- 8. COMPONENT CREATION HELPER
+-- 8. INTERNAL COMPONENT CREATION HELPER
 local function AddButtonToPage(page, text, callback)
     local Button = Instance.new("TextButton")
     Button.Size = UDim2.new(1, -5, 0, 30)
@@ -222,47 +218,31 @@ local function AddButtonToPage(page, text, callback)
     return Button
 end
 
+-- 9. MODULE EXTERNAL API INITIALIZATION
+local HubAPI = {}
 
--- 9. MENGISI FITUR TIAP MENU
-
--- === ISI TAB FARM ===
-local autoFarmActive = false
-local FarmBtn = AddButtonToPage(FarmPage, "Auto Farm: OFF", function()
-    autoFarmActive = not autoFarmActive
-    if autoFarmActive then
-        FarmBtn.Text = "Auto Farm: ON"
-        FarmBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-        
-        task.spawn(function()
-            while autoFarmActive and HrietaHub.Parent do
-                print("[Hrieta Hub] Auto farming cycle running...")
-                task.wait(1)
-            end
-        end)
-    else
-        FarmBtn.Text = "Auto Farm: OFF"
-        FarmBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+function HubAPI:CreateTab(tabName, order)
+    local pageInstance = CreateTab(tabName, order)
+    
+    -- Auto-activate tab pertama yang dibuat biar user gak bingung layar kosong
+    if firstTab == tabName then
+        pages[tabName].Visible = true
+        tabButtons[tabName].TextColor3 = Color3.fromRGB(255, 255, 255)
+        tabButtons[tabName].BackgroundColor3 = Color3.fromRGB(35, 100, 250)
     end
-end)
+    
+    return pageInstance
+end
 
-AddButtonToPage(FarmPage, "Teleport to Checkpoint", function()
-    print("[Hrieta Hub] Teleporting player...")
-end)
+function HubAPI:AddButton(page, text, callback)
+    return AddButtonToPage(page, text, callback)
+end
 
+function HubAPI:Destroy()
+    if HrietaHub then
+        HrietaHub:Destroy()
+    end
+end
 
--- === ISI TAB SETTING ===
-AddButtonToPage(SettingPage, "Reset Speed (16)", function()
-    local humanoid = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if humanoid then humanoid.WalkSpeed = 16 end
-end)
-
-AddButtonToPage(SettingPage, "Set Custom Speed (50)", function()
-    local humanoid = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if humanoid then humanoid.WalkSpeed = 50 end
-end)
-
-AddButtonToPage(SettingPage, "Destroy Interface", function()
-    HrietaHub:Destroy()
-end)
-
-print("Hrieta Hub (Sidebar Layout) loaded successfully.")
+print("[Hrieta Hub] Framework initialized successfully.")
+return HubAPI
