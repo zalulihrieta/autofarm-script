@@ -401,56 +401,84 @@ end)
 
 -- GUI
 
-local GUI = Instance.new("ScreenGui")
-GUI.Name = "BugFarmV2"
-GUI.ResetOnSpawn = false
-GUI.Parent = game:GetService("CoreGui")
+-- VISUALS TAB
 
-local Main = Instance.new("Frame")
-Main.Size = UDim2.fromOffset(260, 390)
-Main.Position = UDim2.new(0.5, -130, 0.5, -195)
-Main.BackgroundColor3 = Color3.fromRGB(24, 25, 32)
-Main.Parent = GUI
+local VisualsTab = Window:Tab({
+    Title = "Visuals",
+    Icon = "eye"
+})
 
-Instance.new("UICorner", Main).CornerRadius =
-    UDim.new(0, 12)
+VisualsTab:Toggle({
+    Title = "Bug ESP",
+    Desc = "Show bug highlights",
+    Value = false,
 
-local function CreateButton(text, y, height)
+    Callback = function(value)
 
-    local button = Instance.new("TextButton")
+        ESPConfig.Enabled = value
 
-    button.Size = UDim2.new(1, -20, 0, height or 34)
-    button.Position = UDim2.fromOffset(10, y)
+        if not value then
+            for bug in pairs(ESPObjects) do
+                RemoveESP(bug)
+            end
+        end
 
-    button.BackgroundColor3 =
-        Color3.fromRGB(43, 45, 56)
+    end
+})
 
-    button.TextColor3 = Color3.new(1, 1, 1)
-    button.TextSize = 12
-    button.Font = Enum.Font.GothamMedium
-    button.Text = text
+VisualsTab:Dropdown({
+    Title = "ESP Size Filter",
 
-    button.Parent = Main
+    Values = {
+        "All Sizes",
+        "Normal",
+        "Small+",
+        "Large+",
+        "Huge+",
+        "Giant+",
+        "Massive"
+    },
 
-    Instance.new("UICorner", button).CornerRadius =
-        UDim.new(0, 7)
+    Value = "Normal",
 
-    return button
+    Callback = function(value)
+        ESPConfig.SizeFilter = value
+    end
+})
 
-end
+VisualsTab:Toggle({
+    Title = "Show Bug Name",
+    Value = true,
 
-local Title = CreateButton("BUG FARM SYSTEM V2", 8, 32)
+    Callback = function(value)
+        ESPConfig.ShowName = value
+    end
+})
 
-local Toggle = CreateButton("FARM : OFF", 48)
-local SpeciesBtn = CreateButton("SPECIES : All Bugs", 88)
-local PriorityBtn = CreateButton("SIZE : Largest First", 128)
-local MovementBtn = CreateButton("MOVEMENT : Teleport", 168)
-local SpeedBtn = CreateButton("TWEEN SPEED : 60", 208)
-local DistanceBtn = CreateButton("ATTACK DISTANCE : 5", 248)
+VisualsTab:Toggle({
+    Title = "Show Distance",
+    Value = true,
 
-local TargetLabel = CreateButton("TARGET : None", 288)
-local CountLabel = CreateButton("BUGS DETECTED : 0", 328)
-local Minimize = CreateButton("MINIMIZE", 368, 28)
+    Callback = function(value)
+        ESPConfig.ShowDistance = value
+    end
+})
+
+VisualsTab:Slider({
+    Title = "ESP Max Distance",
+
+    Value = {
+        Min = 50,
+        Max = 2000,
+        Default = 1000
+    },
+
+    Step = 50,
+
+    Callback = function(value)
+        ESPConfig.MaxDistance = value
+    end
+})
 
 -- FARM TOGGLE
 
