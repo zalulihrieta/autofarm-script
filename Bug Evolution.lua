@@ -691,4 +691,264 @@ UIS.InputEnded:Connect(function(input)
 
 end)
 
+-- =====================================
+-- BUG ESP SYSTEM
+-- =====================================
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local Player = Players.LocalPlayer
+local BugsFolder = workspace:WaitForChild("Bugs")
+
+local ESPConfig = {
+    Enabled = false,
+
+    SizeFilter = "Normal",
+
+    ShowName = true,
+    ShowDistance = true,
+
+    MaxDistance = 1000,
+
+    UpdateInterval = 0.3
+}
+
+local ESPObjects = {}
+
+local ESPColors = {
+    Tiny = Color3.fromRGB(150,150,150),
+    Small = Color3.fromRGB(100,200,255),
+    Normal = Color3.fromRGB(255,255,255),
+    Large = Color3.fromRGB(100,255,100),
+    Huge = Color3.fromRGB(255,190,50),
+    Giant = Color3.fromRGB(255,100,50),
+    Massive = Color3.fromRGB(255,50,100)
+}
+
+local SizeRanks = {
+    Tiny = 1,
+    Small = 2,
+    Normal = 3,
+    Large = 4,
+    Huge = 5,
+    Giant = 6,
+    Massive = 7
+}
+
+-- SIZE DETECTION
+
+local function GetBugSize(name)
+
+    for size, rank in pairs(SizeRanks) do
+
+        if name:lower():find(size:lower(), 1, true) then
+            return size, rank
+        end
+
+    end
+
+    return "Normal", 3
+end
+
+-- FILTER
+
+local function PassSizeFilter(size, rank)
+
+    if ESPConfig.SizeFilter == "Normal" then
+        return true
+    end
+
+    if ESPConfig.SizeFilter == "All Sizes" then
+        return true
+    end
+
+    local minimum = SizeRanks[
+        ESPConfig.SizeFilter:gsub("%+", "")
+    ]
+
+    if not minimum then
+        return false
+    end
+
+    return rank >= minimum
+
+end
+
+-- CREATE ESP
+
+local function CreateESP(bug)
+
+    if ESPObjects[bug] then
+        return
+    end
+
+    local highlight = Instance.new("Highlight")
+
+    highlight.Name = "BugESP_Highlight"
+    highlight.Adornee = bug
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.FillTransparency = 0.85
+    highlight.OutlineTransparency = 0
+
+    local billboard = Instance.new("BillboardGui")
+
+    billboard.Name = "BugESP_Label"
+    billboard.Size = UDim2.fromOffset(150, 40)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+
+    local label = Instance.new("TextLabel")
+
+    label.Size = UDim2.fromScale(1, 1)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.new(1,1,1)
+    label.TextStrokeTransparency = 0
+    label.TextSize = 13
+    label.Font = Enum.Font.GothamBold
+
+    label.Parent = billboard
+
+    local root = bug:FindFirstChild("HumanoidRootPart")
+
+    if root then
+        billboard.Adornee = root
+    end
+
+    ESPObjects[bug] = {
+        Highlight = highlight,
+        Billboard = billboard,
+        Label = label
+    }
+
+end
+
+-- REMOVE ESP
+
+local function RemoveESP(bug)
+
+    local data = ESPObjects[bug]
+
+    if not data then
+        return
+    end
+
+    data.Highlight:Destroy()
+    data.Billboard:Destroy()
+
+    ESPObjects[bug] = nil
+
+end
+
+-- UPDATE ESP
+
+local function UpdateESP()
+
+    local character = Player.Character
+    local hrp = character and
+        character:FindFirstChild("HumanoidRootPart")
+
+    if not hrp then
+        return
+    end
+
+    for _, bug in ipairs(BugsFolder:GetChildren()) do
+
+        if not bug:IsA("Model") then
+            continue
+        end
+
+        local root = bug:FindFirstChild("HumanoidRootPart")
+
+        if not root then
+            RemoveESP(bug)
+            continue
+        end
+
+        local size, rank = GetBugSize(bug.Name)
+
+        local distance =
+            (root.Position - hrp.Position).Magnitude
+
+        local allowed =
+            ESPConfig.Enabled
+            and distance <= ESPConfig.MaxDistance
+            and PassSizeFilter(size, rank)
+
+        if allowed then
+
+            CreateESP(bug)
+
+            local data = ESPObjects[bug]
+
+            local color = ESPColors[size]
+
+            data.Highlight.FillColor = color
+            data.Highlight.OutlineColor = color
+
+            local text = ""
+
+            if ESPConfig.ShowName then
+                text = bug.Name
+            end
+
+            if ESPConfig.ShowDistance then
+
+                if text ~= "" then
+                    text ..= "\n"
+                end
+
+                text ..= math.floor(distance) .. " studs"
+
+            end
+
+            data.Label.Text = text
+
+            data.Highlight.Enabled = true
+            data.Billboard.Enabled = true
+
+        else
+
+            RemoveESP(bug)
+
+        end
+
+    end
+
+    -- CLEANUP
+
+    for bug in pairs(ESPObjects) do
+
+        if not bug.Parent then
+            RemoveESP(bug)
+        end
+
+    end
+
+end
+
+-- ESP LOOP
+
+task.spawn(function()
+
+    while task.wait(ESPConfig.UpdateInterval) do
+
+        UpdateESP()
+
+    end
+
+end)
+
+-- CLEANUP WHEN DISABLED
+
+local function DisableESP()
+
+    ESPConfig.Enabled = false
+
+    for bug in pairs(ESPObjects) do
+        RemoveESP(bug)
+    end
+
+end
+
 print("Bug Farm V2 Loaded")
